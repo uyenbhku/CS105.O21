@@ -13,7 +13,7 @@ This is our team final project repository for class CS105.021.
 |2|[Nguyen Nguyen Giap](https://github.com/Paignn)|21522025|
 |3|[Nguyen Bui Thanh Mai](https://github.com/mainbt)|21522320|
 |4|[Le Thi Nhu Y](https://github.com/lethinhuy20)|21522818|
-|4|[Le Dinh Duy](https://github.com/Hodnduy)|21520769|
+|4|[Ho Dinh Duy](https://github.com/Hodnduy)|21520769|
 
 # Tech-stacks: 
 - Render: Three.js
