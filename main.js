@@ -36,7 +36,7 @@ scene.add(ambientLight);
 let mixer;
 
 // Load model
-const loader = new GLTFLoader().setPath('public/blue_whale/');
+const loader = new GLTFLoader().setPath('public_/blue_whale/');
 
 loader.load('scene.gltf', (gltf) => {
     console.log('Đang tải model');
