@@ -1,70 +1,75 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { Water } from 'three/examples/jsm/objects/Water.js';
+import { Water } from 'three/addons/objects/Water.js';
+import * as THREE from 'three';
 
 let scene, camera, renderer, controls;
 
 function init() {
     // Initialize a scene
     scene = new THREE.Scene();
+    // Initialize a GUI
     var gui = new dat.GUI();   
-    // Initialize a camera
-    camera = new THREE.PerspectiveCamera(
-        45, 
-        window.innerWidth / window.innerHeight, 
-        0.1, 
-        1000
-    );
-    camera.position.set(100, 20, 200);    
+    // Initialize and config a camera
+    camera = setupCamera();  
+    // Initialize and config a renderer
+    renderer = setupRenderer();
     
-    // RENDERER
-    // Initialize a renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    // set size 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    // set scene background 
-    renderer.setClearColor('rgb(100, 100, 100)')
-    renderer.physicallyCorrectLights = true;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    
+    // Orbit Controls
+    controls = setupControls();
+
     // ROOM
-    var room = getRoom();
+    var room = createRoom();
     scene.add(room)
-    var ambientLight = getAmbientLight(2, 'rgb(255, 255, 255)');
+
+    // AMBIENT LIGHT 
+    var ambientLight = createAmbientLight(2, 'rgb(255, 255, 255)');
     ambientLight.position.x = 13;
     ambientLight.position.y = 10;
     ambientLight.position.z = 3;
     ambientLight.intensity = 0.9;
+    scene.add(ambientLight);
     
     // FISH TANK
-    const fishTank = createFishTank(renderer);
-    fishTank.position.y -= 9;
-    scene.add(fishTank)
+    const fishTank = createFishTank();
+    fishTank.position.y -= 100 - 19;
+    fishTank.position.z += 50;
     
+    // !!! CODE HERE
+    // Add Objects to the scene
+    // Con cá trong bể bơi thì thêm vào fishTank
+    // const fishName = createFishName():
+    // fishTank.add(fishName);
+    
+    // đồ ngoại cảnh thì thêm vào scene
+
+    // END CODE
+    scene.add(fishTank)
+
     // TABLE
     const table = createTable();
-    table.position.y -= 5.5;
+    table.position.y -= 100 - 25;
+    table.position.z += 70;
+    table.position.x -= 30;
+    scene.add(table);
     
     // LIGHTING
-    var directionalLight = getDirectionalLight(1);
+    var directionalLight = createDirectionalLight(1);
     directionalLight.position.x = -18;
     directionalLight.position.y = -3.2;
     directionalLight.position.z = 10;
     directionalLight.intensity = 5;
+    scene.add(directionalLight);
     
     // LAMP
     const myLamp = createLamp();
+    myLamp.position.y -= 100 - 29.5;    
+    myLamp.position.z += 70;
+    myLamp.position.x -= 30;
     directionalLight.add(myLamp);
-    
-    // Add Objects to the scene
-    scene.add(directionalLight);
-    scene.add(table);
-    scene.add(ambientLight);
 
 
-    // GUI 
+    // SETUP GUI 
     var lightsFolder = gui.addFolder('Lights');
 
     // Directional Light Controls
@@ -72,7 +77,6 @@ function init() {
     directionalLightControls.add(directionalLight, 'intensity', 0, 10).name('Intensity');
     directionalLightControls.addColor(directionalLight, 'color').name('Color');
     directionalLightControls.add(directionalLight.position, 'x', -22, 22);
-    // directionalLightControls.add(directionalLight.position, 'y', 0, 50);
     directionalLightControls.add(directionalLight.position, 'z', -13, 13);
 
     // Ambient Light Controls
@@ -81,12 +85,9 @@ function init() {
     ambientLightControls.add(ambientLight.position, 'x', 0, 50);
     ambientLightControls.add(ambientLight.position, 'y', 0, 50);
     ambientLightControls.add(ambientLight.position, 'z', 0, 50);
-
-    // Orbit Controls
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.target = new THREE.Vector3(0, 0, 0);
-    controls.update();
     
+    // END SETUP GUI
+
     // render 
     document.body.appendChild(renderer.domElement);
     // dynamic update 
@@ -96,13 +97,12 @@ function init() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    
+    });    
     return scene;
 }
 
-function getRoom() {
+// returns a room 
+function createRoom() {
     const room = new THREE.Group();
 
     // Wall material
@@ -111,53 +111,66 @@ function getRoom() {
     });
 
     // Floor
-    const floorGeometry = new THREE.BoxGeometry(60, 0.5, 60);
+    const floorGeometry = new THREE.BoxGeometry(200, 2, 200);
     const floor = new THREE.Mesh(floorGeometry, wallMaterial);
-    floor.position.y = -30;
+    floor.position.y = -100;
     room.add(floor);
 
     // Left Wall
-    const leftWallGeometry = new THREE.BoxGeometry(0.5, 60, 60);
+    const leftWallGeometry = new THREE.BoxGeometry(2, 200, 200);
     const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
-    leftWall.position.x = -29.75;
+    leftWall.position.x = -100;
     room.add(leftWall);
 
     // Back Wall
-    const backWallGeometry = new THREE.BoxGeometry(60, 60, 0.5);
+    const backWallGeometry = new THREE.BoxGeometry(200, 200, 2);
     const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
-    backWall.position.z = -29.75;
+    backWall.position.z = -100;
     room.add(backWall);
 
     return room;
 }
 
-function createFishTank(renderer) {
+function createFishTank() {
     const fishTank = new THREE.Group();
 
+    // Assuming you have variables defining the fish tank size
+    const tankWidth = 90; // Example width of the fish tank
+    const tankHeight = 100; // Example height of the fish tank
+    const tankDepth = 150; // Example depth of the fish tank
+    
     // Load fish tank model
     const loader = new GLTFLoader().setPath('./public/');
-    loader.load('/glass_cage.glb', function (gltf) {
+    loader.load('/cage/glass_cage.glb', function (gltf) {
         const fishTankModel = gltf.scene;
         fishTankModel.name = 'fish-tank';
-        fishTankModel.scale.set(20, 20, 20);
+        fishTankModel.scale.set(
+            tankWidth, // Example scale factor for width
+            tankHeight, // Example scale factor for height
+            tankDepth  // Example scale factor for depth
+        );
         fishTankModel.position.set(5, 10, 10);
+
+        fishTankModel.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
 
         const glass = fishTankModel.getObjectByName("Cube_2");
         glass.name = 'tank-glass';
         glass.material.transparent = true;
         glass.material.opacity = 0.1;
 
-        // Add water and water surface
         const waterSurface = createWaterSurface();
         const water = createWater();
-        const corals = getCorals();
+        const corals = createCorals();
 
         water.add(corals);
-
+        
         glass.add(water);
         glass.add(waterSurface);
-
-
 
         const count = waterSurface.geometry.attributes.position.count;
         const damping = 0.35;
@@ -167,12 +180,10 @@ function createFishTank(renderer) {
             for (let i = 0; i < count; i++) {
                 const x = waterSurface.geometry.attributes.position.getX(i);
                 const y = waterSurface.geometry.attributes.position.getY(i);
-
                 const xangle = x + now_slow;
                 const xsin = Math.sin(xangle) * damping;
                 const yangle = y + now_slow;
                 const ycos = Math.cos(yangle) * damping;
-
                 waterSurface.geometry.attributes.position.setZ(i, xsin + ycos);
             }
             waterSurface.geometry.computeVertexNormals();
@@ -181,32 +192,21 @@ function createFishTank(renderer) {
         }
 
         animate();
-
         fishTank.add(fishTankModel);
     });
 
+    fishTank.castShadow = true;
+    fishTank.receiveShadow = true;
     return fishTank;
 }
 
 function createWaterSurface() {
-    const textureLoader = new THREE.TextureLoader();
-    const waterNormalMap = textureLoader.load("./textures/water/Water_002_NORM.jpg");
-    const waterHeightMap = textureLoader.load("./textures/water/Water_002_DISP.png");
-    const waterRoughness = textureLoader.load("./textures/water/Water_002_ROUGH.jpg");
-    const waterAmbientOcclusion = textureLoader.load("./textures/water/Water_002_OCC.jpg");
-
     const WIDTH = 30;
     const HEIGHT = 30;
     const waterColor = 0x0189F9;
     const geometry = new THREE.PlaneGeometry(WIDTH, HEIGHT, 200, 200);
     const waterSurfaceMaterial = new THREE.MeshPhongMaterial({
         color: waterColor, // Use the same color as the water
-        normalMap: waterNormalMap,
-        displacementMap: waterHeightMap,
-        displacementScale: 0.01,
-        roughnessMap: waterRoughness,
-        roughness: 0,
-        aoMap: waterAmbientOcclusion
     });
     const waterSurface = new Water(geometry, waterSurfaceMaterial);
     waterSurface.name = 'water_surface';
@@ -243,7 +243,7 @@ function createWater() {
     return waterMesh;
 }
 
-function getCorals() {
+function createCorals() {
     const corals = new THREE.Group();
 
      // Helper function to change coral color
@@ -404,7 +404,7 @@ function createLamp() {
     return lamp;
 }
 
-function getDirectionalLight(intensity, color=0xffffff) {
+function createDirectionalLight(intensity, color=0xffffff) {
     var light = new THREE.DirectionalLight(
         color, 
         intensity
@@ -419,13 +419,43 @@ function getDirectionalLight(intensity, color=0xffffff) {
     return light;
 }
 
-function getAmbientLight(intensity, color=0xffffff) {
+function createAmbientLight(intensity, color=0xffffff) {
     var light = new THREE.AmbientLight(
         color, 
         intensity
     );
     // light.castShadow = true;
     return light;
+}
+
+function setupRenderer() {
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    // set size 
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    // set scene background 
+    renderer.setClearColor('rgb(100, 100, 100)')
+    renderer.physicallyCorrectLights = true;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    return renderer;
+}
+
+function setupCamera() {
+    camera = new THREE.PerspectiveCamera(
+        45, 
+        window.innerWidth / window.innerHeight, 
+        0.1, 
+        1000
+    );
+    camera.position.set(100, 20, 200);  
+    return camera;
+}
+
+function setupControls() {
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.target = new THREE.Vector3(0, 0, 0);
+    controls.update();
+    return controls;
 }
 
 function update(renderer, scene, camera, controls) {
