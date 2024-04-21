@@ -1,0 +1,11 @@
+Model Information:
+* title:	Goldfish
+* source:	https://sketchfab.com/3d-models/goldfish-18f83fd8cf774039b13bc037a9639463
+* author:	1catalogue (https://sketchfab.com/1catalogue)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Goldfish" (https://sketchfab.com/3d-models/goldfish-18f83fd8cf774039b13bc037a9639463) by 1catalogue (https://sketchfab.com/1catalogue) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
