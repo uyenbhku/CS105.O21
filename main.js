@@ -66,11 +66,10 @@ function init() {
     scene.add(directionalLightHelper);
     // LAMP
     const myLamp = createLamp();
-    myLamp.position.copy(table.position)
     myLamp.position.y += 2;    
     myLamp.position.z += 10;    
     myLamp.position.x -= 17;    
-    scene.add(myLamp);
+    table.add(myLamp);
     
     
     // SETUP GUI 
