@@ -1,0 +1,11 @@
+Model Information:
+* title:	Tosakin goldfish
+* source:	https://sketchfab.com/3d-models/tosakin-goldfish-b2f0681c1e2145bcb0289f03ed75ea37
+* author:	somitsu (https://sketchfab.com/somitsu)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Tosakin goldfish" (https://sketchfab.com/3d-models/tosakin-goldfish-b2f0681c1e2145bcb0289f03ed75ea37) by somitsu (https://sketchfab.com/somitsu) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
