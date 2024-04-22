@@ -44,9 +44,68 @@ function init() {
     // Con cá trong bể bơi thì thêm vào fishTank
     // const fishName = createFishName(); 
     // fishTank.add(fishName);
-    
-    // đồ ngoại cảnh thì thêm vào scene
 
+    function createBlueWhale(){
+        const BlueWhale = new THREE.Group(); // Tạo một nhóm mới để chứa mesh và tất cả các thành phần khác của cá voi xanh
+    
+        let mixer;
+        let mesh; // Định nghĩa biến mesh ở phạm vi toàn cục
+    
+        // Load model
+        const loader = new GLTFLoader().setPath('public/blue_whale/');
+    
+        loader.load('scene.gltf', (gltf) => {
+            console.log('Đang tải model');
+            mesh = gltf.scene;
+    
+            // Tính toán kích thước của mô hình
+            const box = new THREE.Box3().setFromObject(mesh);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+    
+            // Tính toán kích thước của fishTank
+            const boxtank = new THREE.Box3().setFromObject(fishTank);
+            const sizetank = new THREE.Vector3();
+            boxtank.getSize(sizetank);
+    
+            // Tính toán tỷ lệ scale giữa kích thước của mô hình và kích thước của fishTank
+            const scaleRatio = (Math.min(sizetank.x / size.x, sizetank.y / size.y, sizetank.z / size.z))*0.6;
+    
+            // Điều chỉnh kích thước của mô hình
+            mesh.scale.set(scaleRatio, scaleRatio, scaleRatio);
+            //mesh.rotation.x = Math.PI / 2;
+            
+            mixer = new THREE.AnimationMixer(mesh);
+            // Associate animations with the mixer and play them
+            gltf.animations.forEach((animation) => {
+                mixer.clipAction(animation).play();
+            });
+
+            // Thêm mesh vào nhóm BlueWhale
+            BlueWhale.add(mesh);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                // // Update the animation mixer
+                if (mixer) {
+                   mixer.update(0.1);
+                 }
+            }
+            // Bắt đầu vòng lặp animate
+            animate();
+        });
+    
+        return BlueWhale;
+    }    
+
+    // đồ ngoại cảnh thì thêm vào scene
+    const BlueWhale = createBlueWhale(); 
+
+    BlueWhale.position.y = 123 - 100;
+    BlueWhale.position.y = 123 - 100;
+    BlueWhale.position.z -= 100;
+
+    fishTank.add(BlueWhale);
     // END CODE
     scene.add(fishTank)
 
