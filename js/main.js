@@ -53,7 +53,10 @@ function Controls(camera, renderer) {
 function ModelLoader(scene) {
   const loader = new GLTFLoader();
   loader.load(
-    `models/ryukin_goldfish/scene.gltf`,
+    // `models/guppy_fish2/scene.gltf`,
+    // `models/guppy_fish3/scene.gltf`,
+    // `models/tosakin_goldfish/scene.gltf`,
+    `models/shark_cage/scene.gltf`,
     function (gltf) {
       const object = gltf.scene;
       // console.log(object);

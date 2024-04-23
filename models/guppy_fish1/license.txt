@@ -1,0 +1,11 @@
+Model Information:
+* title:	Guppy_Fish
+* source:	https://sketchfab.com/3d-models/guppy-fish-4a06d6436f9c4692aefe7891872acb57
+* author:	ollygart (https://sketchfab.com/ollygart)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Guppy_Fish" (https://sketchfab.com/3d-models/guppy-fish-4a06d6436f9c4692aefe7891872acb57) by ollygart (https://sketchfab.com/ollygart) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
