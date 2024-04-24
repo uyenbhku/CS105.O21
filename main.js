@@ -54,19 +54,7 @@ function init() {
     BlueWhale.position.y = 123 - 100;
     BlueWhale.position.z -= 100;
     fishTank.add(BlueWhale);
-    // Bảng thông tin cho cá
-    // addEventListener('click', function (event) {
-    //     var mouse = new THREE.Vector2();
-    //     var raycaster = new THREE.Raycaster();
-    //     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    //     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    //     raycaster.setFromCamera(mouse, camera);
-    //     var intersects = raycaster.intersectObject(BlueWhale);
-    //     if (intersects.length > 0) {
-    //         showInfoPanel('Cá voi xanh', 'Ấn Độ Dương, Thái Bình Dương', '80-90 năm', BlueWhale);
-    //     }
-    // });
-
+    
     // Đọc thông tin từ tệp JSON
     fetch('info.json')
         .then(response => response.json())
