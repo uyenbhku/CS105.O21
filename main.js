@@ -54,6 +54,18 @@ function init() {
     BlueWhale.position.y = 123 - 100;
     BlueWhale.position.z -= 100;
     fishTank.add(BlueWhale);
+    // Bảng thông tin cho cá voi xanh
+    addEventListener('click', function(event) {
+        var mouse = new THREE.Vector2();
+        var raycaster = new THREE.Raycaster();
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObject(BlueWhale);
+        if (intersects.length > 0) {
+            showInfoPanel('Cá voi xanh', 'Ấn Độ Dương, Thái Bình Dương', '80-90 năm', BlueWhale);
+        }
+    });
     // END CODE
     scene.add(fishTank)
 
@@ -673,4 +685,37 @@ function update(renderer, scene, camera, controls) {
     });
 }
 
+function showInfoPanel(x,y,z,object) {
+    var infoPanel = document.createElement('div');
+    infoPanel.style.position = 'absolute';
+    // Lấy vị trí thế giới của vật thể
+    var objectWorldPosition = new THREE.Vector3();
+    object.getWorldPosition(objectWorldPosition);
+
+    // Chuyển đổi vị trí thế giới thành vị trí màn hình
+    var vector = objectWorldPosition.project(camera);
+    vector.x = (vector.x + 1) / 2 * window.innerWidth;
+    vector.y = -(vector.y - 1) / 2 * window.innerHeight;
+
+    infoPanel.style.top = vector.y + 'px';
+    infoPanel.style.left = vector.x + 'px';
+
+    infoPanel.style.background = 'rgba(255,255,255,0.8)';
+    infoPanel.style.padding = '10px';
+    infoPanel.style.whiteSpace = 'pre-line';
+    infoPanel.textContent = 'Thông tin sinh vật: \n' + 'Tên: ' + x + '\n' + 'Nơi sống: ' + y + '\n' + 'Tuổi thọ trung bình: ' + z;
+    document.body.appendChild(infoPanel);
+    // Hide the info panel after 5 seconds
+    setTimeout(() => {
+        document.body.removeChild(infoPanel);
+    }, 10000);
+    // Hide the info panel when the user clicks anywhere on the screen
+    document.addEventListener('click', function() {
+        document.body.removeChild(infoPanel);
+    });
+    // show the info panel when the object is clicked
+    document.addEventListener('click', function() {
+        showInfoPanel();
+    });
+}
 init();
