@@ -9,12 +9,12 @@ function init() {
     // Initialize a scene
     scene = new THREE.Scene();
     // Initialize a GUI
-    gui = new dat.GUI();   
+    gui = new dat.GUI();
     // Initialize and config a camera
-    camera = setupCamera();  
+    camera = setupCamera();
     // Initialize and config a renderer
     renderer = setupRenderer();
-    
+
     // Orbit Controls
     controls = setupControls();
 
@@ -38,7 +38,7 @@ function init() {
     const fishTank = createFishTank();
     fishTank.position.y -= 123 - 19;
     fishTank.position.z += 50;
-    
+
     // !!! CODE HERE
     // Add Objects to the scene
     // Con cá trong bể bơi thì thêm vào fishTank
@@ -48,24 +48,48 @@ function init() {
     // đồ ngoại cảnh thì thêm vào scene
 
     // Thêm blue whale vào hồ
-    const BlueWhale = createBlueWhale(); 
+    const BlueWhale = createBlueWhale();
     BlueWhale.scale.set(0.06, 0.06, 0.06);
     BlueWhale.position.y = 123 - 100;
     BlueWhale.position.y = 123 - 100;
     BlueWhale.position.z -= 100;
     fishTank.add(BlueWhale);
-    // Bảng thông tin cho cá voi xanh
-    addEventListener('click', function(event) {
-        var mouse = new THREE.Vector2();
-        var raycaster = new THREE.Raycaster();
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera(mouse, camera);
-        var intersects = raycaster.intersectObject(BlueWhale);
-        if (intersects.length > 0) {
-            showInfoPanel('Cá voi xanh', 'Ấn Độ Dương, Thái Bình Dương', '80-90 năm', BlueWhale);
-        }
-    });
+    // Bảng thông tin cho cá
+    // addEventListener('click', function (event) {
+    //     var mouse = new THREE.Vector2();
+    //     var raycaster = new THREE.Raycaster();
+    //     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    //     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    //     raycaster.setFromCamera(mouse, camera);
+    //     var intersects = raycaster.intersectObject(BlueWhale);
+    //     if (intersects.length > 0) {
+    //         showInfoPanel('Cá voi xanh', 'Ấn Độ Dương, Thái Bình Dương', '80-90 năm', BlueWhale);
+    //     }
+    // });
+
+    // Đọc thông tin từ tệp JSON
+    fetch('info.json')
+        .then(response => response.json())
+        .then(data => {
+            addEventListener('click', function (event) {
+                var mouse = new THREE.Vector2();
+                var raycaster = new THREE.Raycaster();
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                // Lấy tên của vật thể được click
+                var intersects = raycaster.intersectObject(BlueWhale);
+                if (intersects.length > 0) {
+                    // Kiểm tra xem vật thể được chọn có trong tệp JSON không
+                    const objectInfo = data.find(info => info.name === "BlueWhale");
+                    if (objectInfo) {
+                        showInfoPanel(objectInfo.name, objectInfo.location, objectInfo.lifespan, BlueWhale);
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('No info', error));
+
     // END CODE
     scene.add(fishTank)
 
@@ -75,7 +99,7 @@ function init() {
     table.position.z += 110;
     table.position.x -= 30;
     scene.add(table);
-    
+
     // LIGHTING
     var directionalLight = createDirectionalLight(1);
     directionalLight.intensity = 5;
@@ -85,23 +109,23 @@ function init() {
     scene.add(directionalLightHelper);
     // LAMP
     const myLamp = createLamp();
-    myLamp.position.y += 2;    
-    myLamp.position.z += 10;    
-    myLamp.position.x -= 17;    
+    myLamp.position.y += 2;
+    myLamp.position.z += 10;
+    myLamp.position.x -= 17;
     table.add(myLamp);
-    
-    
+
+
     // SETUP GUI 
     var lightsFolder = gui.addFolder('Lights');
     // Directional Light Controls
     setupDirectionalLightControls(directionalLight, lightsFolder);
-    
+
     // Ambient Light Controls
     setupAmbientLightControls(ambientLight, lightsFolder);
-    
+
     // Spot Light Controls
     // var spotLight = createSpotLight(2, 0xffffff);
-    
+
     // spotLight.position.set(0, 100, 0);
     // setupSpotLightControls(spotLight, lightsFolder);
     // var spotLightHelper = new THREE.SpotLightHelper( spotLight, 2.5 );
@@ -113,21 +137,21 @@ function init() {
     // render 
     document.body.appendChild(renderer.domElement);
     // dynamic update 
-    update(renderer, scene, camera, controls);    
+    update(renderer, scene, camera, controls);
     // responsive
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-    });    
+    });
     return scene;
 }
 
-function createBlueWhale(){
+function createBlueWhale() {
     const BlueWhale = new THREE.Group();
 
     let mixer;
-    let mesh; 
+    let mesh;
 
     // Load model
     const loader = new GLTFLoader().setPath('public/blue_whale/');
@@ -135,7 +159,7 @@ function createBlueWhale(){
     loader.load('scene.gltf', (gltf) => {
         console.log('Đang tải model');
         mesh = gltf.scene;
-                
+
         mixer = new THREE.AnimationMixer(mesh);
         // Associate animations with the mixer and play them
         gltf.animations.forEach((animation) => {
@@ -149,8 +173,8 @@ function createBlueWhale(){
             requestAnimationFrame(animate);
             // // Update the animation mixer
             if (mixer) {
-               mixer.update(0.1);
-             }
+                mixer.update(0.1);
+            }
         }
         // Bắt đầu vòng lặp animate
         animate();
@@ -159,16 +183,16 @@ function createBlueWhale(){
     return BlueWhale;
 }
 
-function setupDirectionalLightControls(directionalLight, parentFolder=None) {
+function setupDirectionalLightControls(directionalLight, parentFolder = None) {
 
     if (!parentFolder) {
         parentFolder = gui;
     }
-    
+
     var directionalLightFolder = parentFolder.addFolder('Directional Light');
     let directionalLightVisible = true; // Initial state of ambient light visibility
     directionalLightFolder.add(
-        {"visible": directionalLightVisible}, 
+        { "visible": directionalLightVisible },
         "visible"
     ).onChange((value) => {
         directionalLightVisible = value;
@@ -187,7 +211,7 @@ function setupDirectionalLightControls(directionalLight, parentFolder=None) {
     rotDirectionalLightControls.add(directionalLight.rotation, 'z', -1, 1);
 }
 
-function setupAmbientLightControls(ambientLight, parentFolder=None) {
+function setupAmbientLightControls(ambientLight, parentFolder = None) {
 
     if (!parentFolder) {
         parentFolder = gui;
@@ -198,7 +222,7 @@ function setupAmbientLightControls(ambientLight, parentFolder=None) {
     // turn on and off
     let ambientLightVisible = true; // Initial state of ambient light visibility
     ambientLightControls.add(
-        {"visible": ambientLightVisible}, 
+        { "visible": ambientLightVisible },
         "visible"
     ).onChange((value) => {
         ambientLightVisible = value;
@@ -206,7 +230,7 @@ function setupAmbientLightControls(ambientLight, parentFolder=None) {
     });
 }
 
-function setupSpotLightControls(spotLight,  parentFolder=None) {
+function setupSpotLightControls(spotLight, parentFolder = None) {
 
     if (!parentFolder) {
         parentFolder = gui;
@@ -216,7 +240,7 @@ function setupSpotLightControls(spotLight,  parentFolder=None) {
     var spotLightFolder = parentFolder.addFolder('Spot Light');
     let spotLightVisible = true; // Initial state of ambient light visibility
     spotLightFolder.add(
-        {"visible": spotLightVisible}, 
+        { "visible": spotLightVisible },
         "visible"
     ).onChange((value) => {
         spotLightVisible = value;
@@ -279,7 +303,7 @@ function createFishTank() {
     const tankWidth = 170; // Example width of the fish tank
     const tankHeight = 200; // Example height of the fish tank
     const tankDepth = 200; // Example depth of the fish tank
-    
+
     // Load fish tank model
     const loader = new GLTFLoader().setPath('./public/');
     loader.load('/cage/glass_cage.glb', function (gltf) {
@@ -309,7 +333,7 @@ function createFishTank() {
         const corals = createCorals();
 
         water.add(corals);
-        
+
         glass.add(water);
         glass.add(waterSurface);
 
@@ -384,7 +408,7 @@ function createWater() {
     return waterMesh;
 }
 
-function createCorals(numberOfCorals=25) {
+function createCorals(numberOfCorals = 25) {
     const corals = new THREE.Group();
     const scale = 0.005;
 
@@ -417,7 +441,7 @@ function createCorals(numberOfCorals=25) {
         coralModel.position.z = -0.4;
         changeCoralColor(coralModel, 0xff0000);
         corals.add(coralModel);
-    });    
+    });
 
     loader.load('/corals/Coral1.glb', function (gltf) {
         const coralModel = gltf.scene;
@@ -427,7 +451,7 @@ function createCorals(numberOfCorals=25) {
         coralModel.position.z = -0.35;
         changeCoralColor(coralModel, 0xffff00);
         corals.add(coralModel);
-    });    
+    });
 
     loader.load('/corals/Coral2.glb', function (gltf) {
         const coralModel = gltf.scene;
@@ -437,7 +461,7 @@ function createCorals(numberOfCorals=25) {
         coralModel.position.z = -0.2;
         changeCoralColor(coralModel, 0xff5b00);
         corals.add(coralModel);
-    });    
+    });
 
     loader.load('/corals/Coral3.glb', function (gltf) {
         const coralModel = gltf.scene;
@@ -447,7 +471,7 @@ function createCorals(numberOfCorals=25) {
         coralModel.position.z = 0.4;
         changeCoralColor(coralModel, 0xffff00);
         corals.add(coralModel);
-    });    
+    });
 
     loader.load('/corals/Coral4.glb', function (gltf) {
         const coralModel = gltf.scene;
@@ -458,7 +482,7 @@ function createCorals(numberOfCorals=25) {
         coralModel.position.z = 0.3;
         changeCoralColor(coralModel, 0x051094);
         corals.add(coralModel);
-    });    
+    });
 
     loader.load('/corals/Coral5.glb', function (gltf) {
         const coralModel = gltf.scene;
@@ -470,11 +494,11 @@ function createCorals(numberOfCorals=25) {
         coralModel.position.z = 0.4;
         changeCoralColor(coralModel, 0xff1ff4);
         corals.add(coralModel);
-    });    
+    });
 
     loader.load('/corals/Coral6.glb', function (gltf) {
         const coralModel = gltf.scene;
-        const rScale = THREE.MathUtils.randFloat(-(scale+0.002), scale+0.001);
+        const rScale = THREE.MathUtils.randFloat(-(scale + 0.002), scale + 0.001);
         coralModel.scale.set(rScale, rScale, rScale);
         coralModel.position.x = 0.32;
         coralModel.position.y = -0.5;
@@ -482,7 +506,7 @@ function createCorals(numberOfCorals=25) {
         coralModel.position.z = 0.25;
         changeCoralColor(coralModel, 0xff5b00);
         corals.add(coralModel);
-    });    
+    });
 
     // random corals at random places
     for (let i = 0; i < numberOfCorals; i++) {
@@ -539,7 +563,7 @@ function createTable() {
     const leg1Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
     const leg1 = new THREE.Mesh(leg1Geometry, leg1Material);
     leg1.position.set(-20, -12, -13);
-    leg1.castShadow = true; 
+    leg1.castShadow = true;
     leg1.receiveShadow = true;
     table.add(leg1);
 
@@ -547,7 +571,7 @@ function createTable() {
     const leg2Geometry = new THREE.BoxGeometry(legWidth, legHeight, legDepth);
     const leg2Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
     const leg2 = new THREE.Mesh(leg2Geometry, leg2Material);
-    leg2.castShadow = true; 
+    leg2.castShadow = true;
     leg2.receiveShadow = true;
     leg2.position.set(20, -12, -13);
     table.add(leg2);
@@ -556,7 +580,7 @@ function createTable() {
     const leg3Geometry = new THREE.BoxGeometry(legWidth, legHeight, legDepth);
     const leg3Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
     const leg3 = new THREE.Mesh(leg3Geometry, leg3Material);
-    leg3.castShadow = true; 
+    leg3.castShadow = true;
     leg3.receiveShadow = true;
     leg3.position.set(-20, -12, 13);
     table.add(leg3);
@@ -565,7 +589,7 @@ function createTable() {
     const leg4Geometry = new THREE.BoxGeometry(legWidth, legHeight, legDepth);
     const leg4Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
     const leg4 = new THREE.Mesh(leg4Geometry, leg4Material);
-    leg4.castShadow = true; 
+    leg4.castShadow = true;
     leg4.receiveShadow = true;
     leg4.position.set(20, -12, 13);
     table.add(leg4);
@@ -599,9 +623,9 @@ function createLamp() {
     return lamp;
 }
 
-function createDirectionalLight(intensity, color=0xffffff) {
+function createDirectionalLight(intensity, color = 0xffffff) {
     var light = new THREE.DirectionalLight(
-        color, 
+        color,
         intensity
     );
     light.castShadow = true;
@@ -621,17 +645,17 @@ function createDirectionalLight(intensity, color=0xffffff) {
     return light;
 }
 
-function createAmbientLight(intensity, color=0xffffff) {
+function createAmbientLight(intensity, color = 0xffffff) {
     var light = new THREE.AmbientLight(
-        color, 
+        color,
         intensity
     );
     return light;
 }
 
-function createSpotLight(intensity, color=0xffffff, angle = Math.PI / 6) {
+function createSpotLight(intensity, color = 0xffffff, angle = Math.PI / 6) {
     var light = new THREE.SpotLight(
-        color, 
+        color,
         intensity
     );
     light.castShadow = true;
@@ -658,12 +682,12 @@ function setupRenderer() {
 
 function setupCamera() {
     camera = new THREE.PerspectiveCamera(
-        45, 
-        window.innerWidth / window.innerHeight, 
-        0.1, 
+        45,
+        window.innerWidth / window.innerHeight,
+        0.1,
         1000
     );
-    camera.position.set(500, 20, 400);  
+    camera.position.set(500, 20, 400);
     return camera;
 }
 
@@ -680,12 +704,12 @@ function update(renderer, scene, camera, controls) {
 
     controls.update();
     // handle the render of the scene
-    requestAnimationFrame(function() {
+    requestAnimationFrame(function () {
         update(renderer, scene, camera, controls);
     });
 }
 
-function showInfoPanel(x,y,z,object) {
+function showInfoPanel(x, y, z, object) {
     var infoPanel = document.createElement('div');
     infoPanel.style.position = 'absolute';
     // Lấy vị trí thế giới của vật thể
@@ -710,11 +734,11 @@ function showInfoPanel(x,y,z,object) {
         document.body.removeChild(infoPanel);
     }, 10000);
     // Hide the info panel when the user clicks anywhere on the screen
-    document.addEventListener('click', function() {
+    document.addEventListener('click', function () {
         document.body.removeChild(infoPanel);
     });
     // show the info panel when the object is clicked
-    document.addEventListener('click', function() {
+    document.addEventListener('click', function () {
         showInfoPanel();
     });
 }
