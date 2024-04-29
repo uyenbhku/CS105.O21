@@ -1,4 +1,4 @@
-import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
+import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.163.0/three.module.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 // import { TextureLoader } from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
@@ -53,10 +53,7 @@ function Controls(camera, renderer) {
 function ModelLoader(scene) {
   const loader = new GLTFLoader();
   loader.load(
-    // `models/guppy_fish2/scene.gltf`,
-    // `models/guppy_fish3/scene.gltf`,
-    // `models/tosakin_goldfish/scene.gltf`,
-    `models/shark_cage/scene.gltf`,
+    `models/goldfish/scene.gltf`,
     function (gltf) {
       const object = gltf.scene;
       // console.log(object);
