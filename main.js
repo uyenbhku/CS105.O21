@@ -54,15 +54,21 @@ function init() {
   BlueWhale.position.z -= 100;
   fishTank.add(BlueWhale);
 
-  // Thêm waltz of the sharks
-  const SharkWaltz = createSharkWaltz();
-  SharkWaltz.scale.set(3, 3, 3);
-  SharkWaltz.position.y = 123 - 100;
-  SharkWaltz.position.y = 123 - 100;
-  SharkWaltz.position.z -= 100;
-  fishTank.add(SharkWaltz);
-  // END CODE
-  scene.add(fishTank);
+  // Thêm cá vàng Ryukin
+  const RyukinGoldfish = createRyukinGoldfish();
+  RyukinGoldfish.scale.set(2, 2, 2);
+  RyukinGoldfish.position.y = 25;
+  RyukinGoldfish.position.x += 40;
+  RyukinGoldfish.position.z -= 100;
+  fishTank.add(RyukinGoldfish);
+
+  // Thêm sứa
+  const SpottedJellyfish = createSpottedJellyfish();
+  SpottedJellyfish.scale.set(12, 12, 12);
+  SpottedJellyfish.position.y = 15;
+  SpottedJellyfish.position.x -= 60;
+  SpottedJellyfish.position.z -= 100;
+  fishTank.add(SpottedJellyfish);
 
   // Đọc thông tin từ tệp JSON
   fetch("info.json")
@@ -185,6 +191,110 @@ function createBlueWhale() {
   });
 
   return BlueWhale;
+}
+
+function createRyukinGoldfish() {
+  const Ryukin = new THREE.Group();
+  let mixer;
+  let object;
+  const loader = new GLTFLoader();
+  loader.load(
+    `models/ryukin_goldfish/scene.gltf`,
+    function (gltf) {
+      object = gltf.scene;
+      mixer = new THREE.AnimationMixer(object);
+      gltf.animations.forEach((animation) => {
+        mixer.clipAction(animation).play();
+      });
+      Ryukin.add(object);
+      // Tạo quỹ đạo 3D
+      const curve = new THREE.CatmullRomCurve3(
+        [
+          new THREE.Vector3(-7.5, -7.5, -7.5),
+          new THREE.Vector3(7.5, 0, 7.5),
+          new THREE.Vector3(6, 7.5, -4),
+          new THREE.Vector3(-4, 4, 7.5),
+          new THREE.Vector3(-7.5, -7.5, -7.5),
+        ],
+        true
+      );
+      let speed = 0.003;
+      let time = 0;
+      // const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        // const delta = clock.getDelta();
+        // time += delta;
+        time += speed;
+        const t = time % 1; // t từ 0 đến 1
+        const position = curve.getPointAt(t);
+        object.position.copy(position);
+
+        const index = Math.floor(t * (curve.points.length - 1));
+        const direction = new THREE.Vector3()
+          .copy(curve.points[(index + 1) % curve.points.length])
+          .sub(curve.points[index])
+          .normalize();
+
+        const targetRotationY =
+          Math.atan2(-direction.z, direction.x) + Math.PI / 5;
+        const currentRotationY = object.rotation.y;
+        const rotationSpeed = 0.06; // chỉnh tốc độ quay
+
+        object.rotation.y +=
+          rotationSpeed * (targetRotationY - currentRotationY);
+
+        mixer.update(speed);
+      }
+      animate();
+    },
+    function (xhr) {
+      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+    },
+    function (error) {
+      console.error(error);
+    }
+  );
+
+  return Ryukin;
+}
+
+function createSpottedJellyfish() {
+  const SpottedJellyfish = new THREE.Group();
+
+  let mixer;
+  let object;
+
+  const loader = new GLTFLoader();
+  loader.load(
+    `models/simple_spotted_jellyfish_baked_animation/scene.gltf`,
+    function (gltf) {
+      object = gltf.scene;
+
+      mixer = new THREE.AnimationMixer(object);
+      gltf.animations.forEach((animation) => {
+        mixer.clipAction(animation).play();
+      });
+
+      SpottedJellyfish.add(object);
+
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        mixer.update(delta);
+      }
+      animate();
+    },
+    function (xhr) {
+      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+    },
+    function (error) {
+      console.error(error);
+    }
+  );
+
+  return SpottedJellyfish;
 }
 
 function setupDirectionalLightControls(directionalLight, parentFolder = None) {
