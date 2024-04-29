@@ -64,6 +64,37 @@ function init() {
   // END CODE
   scene.add(fishTank);
 
+  // Đọc thông tin từ tệp JSON
+  fetch("info.json")
+    .then((response) => response.json())
+    .then((data) => {
+      addEventListener("click", function (event) {
+        var mouse = new THREE.Vector2();
+        var raycaster = new THREE.Raycaster();
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        // Lấy tên của vật thể được click
+        var intersects = raycaster.intersectObject(BlueWhale);
+        if (intersects.length > 0) {
+          // Kiểm tra xem vật thể được chọn có trong tệp JSON không
+          const objectInfo = data.find((info) => info.name === "BlueWhale");
+          if (objectInfo) {
+            showInfoPanel(
+              objectInfo.name,
+              objectInfo.location,
+              objectInfo.lifespan,
+              BlueWhale
+            );
+          }
+        }
+      });
+    })
+    .catch((error) => console.error("No info", error));
+
+  // END CODE
+  scene.add(fishTank);
+
   // TABLE
   const table = createTable();
   table.position.y -= 150 - 25;
@@ -154,44 +185,6 @@ function createBlueWhale() {
   });
 
   return BlueWhale;
-}
-
-function createSharkWaltz(scene) {
-  const WaltzShark = new THREE.Group();
-
-  const loader = new GLTFLoader();
-  let object;
-  let mixer;
-  loader.load(
-    `public/waltz_of_the_sharks/scene.gltf`,
-    function (gltf) {
-      object = gltf.scene;
-      // console.log(object);
-      //   scene.add(object);
-
-      mixer = new THREE.AnimationMixer(object);
-      gltf.animations.forEach((animation) => {
-        mixer.clipAction(animation).play();
-      });
-
-      const clock = new THREE.Clock();
-      function animate() {
-        requestAnimationFrame(animate);
-        const delta = clock.getDelta();
-        mixer.update(delta);
-      }
-      animate();
-      WaltzShark.add(object);
-      console.log("Mai's fish");
-    },
-    function (xhr) {
-      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
-    },
-    function (error) {
-      console.error(error);
-    }
-  );
-  return WaltzShark;
 }
 
 function setupDirectionalLightControls(directionalLight, parentFolder = None) {
@@ -709,4 +702,46 @@ function update(renderer, scene, camera, controls) {
   });
 }
 
+function showInfoPanel(x, y, z, object) {
+  var infoPanel = document.createElement("div");
+  infoPanel.style.position = "absolute";
+  // Lấy vị trí thế giới của vật thể
+  var objectWorldPosition = new THREE.Vector3();
+  object.getWorldPosition(objectWorldPosition);
+
+  // Chuyển đổi vị trí thế giới thành vị trí màn hình
+  var vector = objectWorldPosition.project(camera);
+  vector.x = ((vector.x + 1) / 2) * window.innerWidth;
+  vector.y = (-(vector.y - 1) / 2) * window.innerHeight;
+
+  infoPanel.style.top = vector.y + "px";
+  infoPanel.style.left = vector.x + "px";
+
+  infoPanel.style.background = "rgba(255,255,255,0.8)";
+  infoPanel.style.padding = "10px";
+  infoPanel.style.whiteSpace = "pre-line";
+  infoPanel.textContent =
+    "Thông tin sinh vật: \n" +
+    "Tên: " +
+    x +
+    "\n" +
+    "Nơi sống: " +
+    y +
+    "\n" +
+    "Tuổi thọ trung bình: " +
+    z;
+  document.body.appendChild(infoPanel);
+  // Hide the info panel after 5 seconds
+  setTimeout(() => {
+    document.body.removeChild(infoPanel);
+  }, 10000);
+  // Hide the info panel when the user clicks anywhere on the screen
+  document.addEventListener("click", function () {
+    document.body.removeChild(infoPanel);
+  });
+  // show the info panel when the object is clicked
+  document.addEventListener("click", function () {
+    showInfoPanel();
+  });
+}
 init();
