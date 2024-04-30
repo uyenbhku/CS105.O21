@@ -199,7 +199,7 @@ function createRyukinGoldfish() {
   let object;
   const loader = new GLTFLoader();
   loader.load(
-    `models/ryukin_goldfish/scene.gltf`,
+    `public/ryukin_goldfish/scene.gltf`,
     function (gltf) {
       object = gltf.scene;
       mixer = new THREE.AnimationMixer(object);
@@ -220,10 +220,10 @@ function createRyukinGoldfish() {
       );
       let speed = 0.003;
       let time = 0;
-      // const clock = new THREE.Clock();
+      const clock = new THREE.Clock();
       function animate() {
         requestAnimationFrame(animate);
-        // const delta = clock.getDelta();
+        const delta = clock.getDelta();
         // time += delta;
         time += speed;
         const t = time % 1; // t từ 0 đến 1
@@ -239,12 +239,12 @@ function createRyukinGoldfish() {
         const targetRotationY =
           Math.atan2(-direction.z, direction.x) + Math.PI / 5;
         const currentRotationY = object.rotation.y;
-        const rotationSpeed = 0.06; // chỉnh tốc độ quay
+        const rotationSpeed = 0.045; // chỉnh tốc độ quay
 
         object.rotation.y +=
           rotationSpeed * (targetRotationY - currentRotationY);
 
-        mixer.update(speed);
+        mixer.update(delta);
       }
       animate();
     },
@@ -267,7 +267,7 @@ function createSpottedJellyfish() {
 
   const loader = new GLTFLoader();
   loader.load(
-    `models/simple_spotted_jellyfish_baked_animation/scene.gltf`,
+    `public/simple_spotted_jellyfish_baked_animation/scene.gltf`,
     function (gltf) {
       object = gltf.scene;
 
