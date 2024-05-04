@@ -1,0 +1,11 @@
+Model Information:
+* title:	Simple Spotted Jellyfish (Baked Animation)
+* source:	https://sketchfab.com/3d-models/simple-spotted-jellyfish-baked-animation-d5006697ad3c4bc1ac814110cde19af2
+* author:	n- (https://sketchfab.com/n-)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Simple Spotted Jellyfish (Baked Animation)" (https://sketchfab.com/3d-models/simple-spotted-jellyfish-baked-animation-d5006697ad3c4bc1ac814110cde19af2) by n- (https://sketchfab.com/n-) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
