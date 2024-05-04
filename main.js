@@ -473,20 +473,21 @@ function setupSpotLightControls(spotLight, parentFolder = None) {
 // returns a room 
 function createRoom(width, length, height, thickness, texturePath='') {
     const room = new THREE.Group();
+    let defaultColor = 'rgb(199, 199, 255)';
+    const textureLoader = new THREE.TextureLoader();
 
     // Wall material
     let wallMaterial;
     if (texturePath) {
-        const texture = new THREE.TextureLoader().load(texturePath); 
         // Create a material with the loaded texture
         wallMaterial = new THREE.MeshStandardMaterial({
-            map: texture, // Use the texture for color
+            map: textureLoader.load(texturePath), // Use the texture for color
             side: THREE.DoubleSide, // Ensure texture is visible on both sides of the wall
         });
     }
     else {
         wallMaterial = new THREE.MeshPhysicalMaterial({
-            color: 'rgb(199, 199, 255)',
+            color: defaultColor,
         });
     }
 
@@ -515,6 +516,27 @@ function createRoom(width, length, height, thickness, texturePath='') {
     backWall.receiveShadow = true;
     room.add(backWall);
 
+    // GUI controls object
+    const wallControls = {
+        'Wall textures': texturePath || '',
+        'Wall color': defaultColor,
+    };
+    gui.add(wallControls, 'Wall textures', {
+        Wood: 'public/textures/wooden.jpg',
+        Rocky: 'public/textures/rocky.jpg',
+        Brick: 'public/textures/brick.jpg',
+        'Gray Brick': 'public/textures/graybricks.jpg',
+    }).onChange(function(value) {
+        // Update wall texture when GUI control changes
+        wallMaterial.map = textureLoader.load(value);
+        wallMaterial.needsUpdate = true;
+    });
+
+    gui.addColor(wallControls, 'Wall color').onChange(function (value) {
+        // Update wall color when GUI control changes
+        wallMaterial.color.set(value);
+    });
+    
     return room;
 }
 
@@ -533,10 +555,10 @@ function createFishTank(tankWidth=170, tankHeight=200, tankDepth=200) {
         );
 
         fishTankModel.traverse((child) => {
-        if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-        }
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
         });
 
         const glass = fishTankModel.getObjectByName("Cube_2");
