@@ -3,5 +3,23 @@
         "name": "BlueWhale",
         "location": "Ấn Độ Dương, Thái Bình Dương",
         "lifespan": "80-90 năm"
-    }    
+    },
+    
+    {
+        "name": "Jellyfish",
+        "location": "Mọi đại dương",
+        "lifespan": "vài tháng-1 năm"
+    },
+
+    {
+        "name": "Cá vàng Ryukin",
+        "location": "Trung Quốc",
+        "lifespan": "10-15 năm"
+    },
+
+    {
+        "name": "SpottedJellyfish",
+        "location": "Ấn Độ Dương, Thái Bình Dương",
+        "lifespan": "vài tháng-1 năm"
+    }
 ]
