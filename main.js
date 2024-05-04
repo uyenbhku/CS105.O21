@@ -180,7 +180,7 @@ function createBlueWhale(controls, controls2) {
     loader.load('scene.gltf', (gltf) => {
         console.log('Đang tải model');
         mesh = gltf.scene;
-        mesh.scale.set(0.9, 0.9, 0.9);
+        mesh.scale.set(0.85, 0.85, 0.85);
 
         mixer = new THREE.AnimationMixer(mesh);
         // Associate animations with the mixer and play them
