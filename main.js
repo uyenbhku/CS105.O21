@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Water } from 'three/addons/objects/Water.js';
 import * as THREE from 'three';
 
-let scene, camera, renderer, controls, gui;
+let scene, camera, renderer, controls,controls2, gui;
 
 function init() {
     // Initialize a scene
@@ -16,7 +16,10 @@ function init() {
     renderer = setupRenderer();
 
     // Orbit Controls
-    controls = setupControls();
+    const controls = setupControls();
+    const controls2 = setupControls();
+
+
 
     // ROOM
     var room = createRoom();
@@ -48,9 +51,9 @@ function init() {
     // đồ ngoại cảnh thì thêm vào scene
 
     // Thêm blue whale vào hồ
-    const BlueWhale = createBlueWhale();
+    const BlueWhale = createBlueWhale(controls, controls2); 
     BlueWhale.scale.set(0.06, 0.06, 0.06);
-    BlueWhale.position.y = 123 - 100;
+    BlueWhale.position.x = 123 - 100;
     BlueWhale.position.y = 123 - 100;
     BlueWhale.position.z -= 100;
     fishTank.add(BlueWhale);
@@ -78,6 +81,16 @@ function init() {
         })
         .catch(error => console.error('No info', error));
 
+    // END CODE
+    scene.add(fishTank)
+
+    //Thêm jelly fish
+    const JellyFish = createJellyFish(); 
+    JellyFish.scale.set(3, 3, 3);
+    JellyFish.position.x = - 80;
+    JellyFish.position.y = 123 - 100;
+    JellyFish.position.z -= 100;
+    fishTank.add(JellyFish);
     // END CODE
     scene.add(fishTank)
 
@@ -135,7 +148,7 @@ function init() {
     return scene;
 }
 
-function createBlueWhale() {
+function createBlueWhale(controls, controls2) {
     const BlueWhale = new THREE.Group();
 
     let mixer;
@@ -147,6 +160,7 @@ function createBlueWhale() {
     loader.load('scene.gltf', (gltf) => {
         console.log('Đang tải model');
         mesh = gltf.scene;
+        mesh.scale.set(0.5, 0.5, 0.5);
 
         mixer = new THREE.AnimationMixer(mesh);
         // Associate animations with the mixer and play them
@@ -157,21 +171,112 @@ function createBlueWhale() {
         // Thêm mesh vào nhóm BlueWhale
         BlueWhale.add(mesh);
 
-        function animate() {
+        const points = [
+            new THREE.Vector3(-1000, 0, 500), // điểm bên trái ở ngoài
+            new THREE.Vector3(-1000, 0, -1000), // điểm bên trái ở trong
+            new THREE.Vector3(1000, 0, -500), // điểm bên phải ở trong
+            new THREE.Vector3(1000, 0, 500), // điểm bên phải ở ngoài
+        ];
+
+        const path = new THREE.CatmullRomCurve3(points, true);
+
+        function animate(time) {
+            const target = controls.target;
+            controls.update();
+            controls2.target.set(target.x, target.y, target.z);
+            controls2.update();
+
+            if (mesh) {
+                const t = (time / 8000 % 6) / 6; // chỉnh speed 
+                const position = path.getPointAt(t);
+                mesh.position.copy(position);
+
+                // Tính toán vector hướng giữa các điểm trong mảng points
+                const index = Math.floor(t * (points.length - 1));
+                const direction = new THREE.Vector3().copy(points[index + 1]).sub(points[index]).normalize();
+
+                // Tính toán góc xoay của mesh dựa trên hướng vector và mềm dần góc quay
+                const targetRotationY = Math.atan2(-direction.z, direction.x) + Math.PI/5; // Quay mesh 180 độ
+                const currentRotationY = mesh.rotation.y;
+                const rotationSpeed = 0.000008; // Tốc độ quay
+
+                // Mềm dần góc quay
+                mesh.rotation.y += rotationSpeed * (targetRotationY - currentRotationY);
+            }
+
             requestAnimationFrame(animate);
+
             // // Update the animation mixer
             if (mixer) {
-                mixer.update(0.1);
+                mixer.update(0.00006);
             }
+
         }
-        // Bắt đầu vòng lặp animate
-        animate();
+        renderer.setAnimationLoop(animate)
     });
 
     return BlueWhale;
 }
 
-function setupDirectionalLightControls(directionalLight, parentFolder = None) {
+function createJellyFish() {
+    const JellyFish = new THREE.Group();
+
+    let mixer;
+    let mesh;
+
+    // Load model
+    const loader = new GLTFLoader().setPath('public/jelly_fish/');
+
+    loader.load('scene.gltf', (gltf) => {
+        console.log('Đang tải model');
+        mesh = gltf.scene;
+        mesh.scale.set(1.5, 1.5, 1.5);
+        mesh.rotation.y = Math.PI/2;
+
+        mixer = new THREE.AnimationMixer(mesh);
+        // Associate animations with the mixer and play them
+        gltf.animations.forEach((animation) => {
+            mixer.clipAction(animation).play();
+        });
+
+        // Thêm mesh vào nhóm JellyFish
+        JellyFish.add(mesh);
+
+        let upward = true; // Biến để xác định hướng di chuyển
+
+        function animate() {
+            // Di chuyển mesh lên và xuống
+            const amplitude = 15; // Biên độ di chuyển
+            const speed = 0.008; // Tốc độ di chuyển
+
+            if (upward) {
+                mesh.position.y += speed;
+            } else {
+                mesh.position.y -= speed;
+            }
+
+            // Đảo hướng di chuyển khi mesh đạt biên độ di chuyển
+            if (mesh.position.y >= amplitude || mesh.position.y <= -amplitude) {
+                upward = !upward;
+            }
+
+            requestAnimationFrame(animate);
+
+            // // Update the animation mixer
+            if (mixer) {
+                mixer.update(0.006);
+            }
+
+        }
+        renderer.setAnimationLoop(animate)
+    });
+    JellyFish.rotation.x = -Math.PI / 4; // Rotate group by 30 degrees
+    
+    return JellyFish;
+}
+
+
+function setupDirectionalLightControls(directionalLight, parentFolder=None) {
 
     if (!parentFolder) {
         parentFolder = gui;
