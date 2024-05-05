@@ -98,13 +98,13 @@ function init() {
     SpottedJellyfish.position.z -= 100;
     fishTank.add(SpottedJellyfish);
 
-    //Thêm jelly fish
-    const JellyFish = createJellyFish(); 
-    JellyFish.scale.set(3, 3, 3);
-    JellyFish.position.x = - 80;
-    JellyFish.position.y = 123 - 100;
-    JellyFish.position.z -= 100;
-    fishTank.add(JellyFish);
+    //Thêm cua
+    const Crab = createCrab(); 
+    Crab.scale.set(3, 3, 3);
+    Crab.position.x = 0;
+    Crab.position.y = -25;
+    Crab.position.z -= 100;
+    fishTank.add(Crab);
 
     //Thêm Orca
     const Orca = createOrca();
@@ -249,7 +249,7 @@ function createBlueWhale(controls, controls2) {
     loader.load('scene.gltf', (gltf) => {
         console.log('Đang tải model');
         mesh = gltf.scene;
-        mesh.scale.set(0.5, 0.5, 0.5);
+        mesh.scale.set(0.85, 0.85, 0.85);
 
         mixer = new THREE.AnimationMixer(mesh);
         // Associate animations with the mixer and play them
@@ -261,10 +261,10 @@ function createBlueWhale(controls, controls2) {
         BlueWhale.add(mesh);
 
         const points = [
-            new THREE.Vector3(-1000, 0, 500), // điểm bên trái ở ngoài
+            new THREE.Vector3(-1000, 0, -15), // điểm bên trái ở ngoài
             new THREE.Vector3(-1000, 0, -1000), // điểm bên trái ở trong
             new THREE.Vector3(1000, 0, -500), // điểm bên phải ở trong
-            new THREE.Vector3(1000, 0, 500), // điểm bên phải ở ngoài
+            new THREE.Vector3(1000, 0, -15), // điểm bên phải ở ngoài
         ];
 
         const path = new THREE.CatmullRomCurve3(points, true);
@@ -287,7 +287,7 @@ function createBlueWhale(controls, controls2) {
                 // Tính toán góc xoay của mesh dựa trên hướng vector và mềm dần góc quay
                 const targetRotationY = Math.atan2(-direction.z, direction.x) + Math.PI/5; // Quay mesh 180 độ
                 const currentRotationY = mesh.rotation.y;
-                const rotationSpeed = 0.000008; // Tốc độ quay
+                const rotationSpeed = 0.00008; // Tốc độ quay
 
                 // Mềm dần góc quay
                 mesh.rotation.y += rotationSpeed * (targetRotationY - currentRotationY);
@@ -410,20 +410,20 @@ function createSpottedJellyfish() {
     return SpottedJellyfish;
 }
 
-function createJellyFish() {
-    const JellyFish = new THREE.Group();
+function createCrab() {
+    const Crab = new THREE.Group();
 
     let mixer;
     let mesh;
 
     // Load model
-    const loader = new GLTFLoader().setPath('public/jelly_fish/');
+    const loader = new GLTFLoader().setPath('public/animated_crab/');
 
     loader.load('scene.gltf', (gltf) => {
         console.log('Đang tải model');
         mesh = gltf.scene;
-        mesh.scale.set(1.5, 1.5, 1.5);
-        mesh.rotation.y = Math.PI/2;
+        mesh.scale.set(3.5, 3.5, 3.5);
+        mesh.rotation.x = Math.PI/8;
 
         mixer = new THREE.AnimationMixer(mesh);
         // Associate animations with the mixer and play them
@@ -432,24 +432,24 @@ function createJellyFish() {
         });
 
         // Thêm mesh vào nhóm JellyFish
-        JellyFish.add(mesh);
-        console.log('Đã tải model jellyfish');
+        Crab.add(mesh);
+        console.log('Đã tải model crab');
 
         let upward = true; // Biến để xác định hướng di chuyển
 
         function animate() {
             // Di chuyển mesh lên và xuống
-            const amplitude = 15; // Biên độ di chuyển
-            const speed = 0.008; // Tốc độ di chuyển
+            const amplitude = 25; // Biên độ di chuyển
+            const speed = 0.08; // Tốc độ di chuyển
 
             if (upward) {
-                mesh.position.y += speed;
+                mesh.position.x += speed;
             } else {
-                mesh.position.y -= speed;
+                mesh.position.x -= speed;
             }
 
             // Đảo hướng di chuyển khi mesh đạt biên độ di chuyển
-            if (mesh.position.y >= amplitude || mesh.position.y <= -amplitude) {
+            if (mesh.position.x >= amplitude || mesh.position.x <= -amplitude) {
                 upward = !upward;
             }
 
@@ -457,15 +457,15 @@ function createJellyFish() {
 
             // // Update the animation mixer
             if (mixer) {
-                mixer.update(0.006);
+                mixer.update(0.03);
             }
 
         }
         renderer.setAnimationLoop(animate)
     });
-    JellyFish.rotation.x = -Math.PI / 4; // Rotate group by 30 degrees
+    Crab.rotation.x = -Math.PI / 4; // Rotate group by 30 degrees
     
-    return JellyFish;
+    return Crab;
 }
 
 function createOrca() {
