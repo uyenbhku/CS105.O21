@@ -2,6 +2,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { Water } from "three/addons/objects/Water.js";
 import * as THREE from "three";
+import * as YUKA from './lib/yuka.module.js';
 
 let scene, camera, renderer, controls, controls2, gui;
 
@@ -104,8 +105,76 @@ function init() {
     JellyFish.position.y = 123 - 100;
     JellyFish.position.z -= 100;
     fishTank.add(JellyFish);
+
+    //Thêm Orca
+    const Orca = createOrca();
+    fishTank.add(Orca);
+
+    // Đọc thông tin từ tệp JSON
+    fetch("orca.json")
+        .then((response) => response.json())
+        .then((data) => {
+          addEventListener("click", function (event) {
+            var mouse = new THREE.Vector2();
+            var raycaster = new THREE.Raycaster();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            // Lấy tên của vật thể được click
+            var intersects = raycaster.intersectObject(Orca);
+            if (intersects.length > 0) {
+            // Kiểm tra xem vật thể được chọn có trong tệp JSON không
+            const objectInfo = data.find((info) => info.name === "Orca");
+            if (objectInfo) {
+                showInfoPanel(
+                  objectInfo.name,
+                  objectInfo.location,
+                  objectInfo.lifespan,
+                  Orca
+                );
+              }
+            }
+          });
+        })
+    .catch((error) => console.error("No info", error));
+
+	
+	//Thêm Turtle
+  	const Turtle = createTurtle();
+  	fishTank.add(Turtle);
+    
+	// Đọc thông tin từ tệp JSON
+  	fetch("turtle.json")
+  	.then((response) => response.json())
+  	.then((data) => {
+		addEventListener("click", function (event) {
+	  	var mouse = new THREE.Vector2();
+	  	var raycaster = new THREE.Raycaster();
+	  	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	  	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+	  	raycaster.setFromCamera(mouse, camera);
+	  	// Lấy tên của vật thể được click
+	  	var intersects = raycaster.intersectObject(Turtle);
+	  	if (intersects.length > 0) {
+			// Kiểm tra xem vật thể được chọn có trong tệp JSON không
+			const objectInfo = data.find((info) => info.name === "Turtle");
+			if (objectInfo) {
+		  		showInfoPanel(
+                objectInfo.name,
+                objectInfo.location,
+                objectInfo.lifespan,
+                Turtle
+              );
+            }
+          }
+        });
+      })
+  	.catch((error) => console.error("No info", error));
+    
     // END CODE
     scene.add(fishTank);
+
+    
 
     // TABLE
     const table = createTable();
@@ -397,6 +466,123 @@ function createJellyFish() {
     JellyFish.rotation.x = -Math.PI / 4; // Rotate group by 30 degrees
     
     return JellyFish;
+}
+
+function createOrca() {
+  let fish;
+  let mixer;
+  const Orca = new THREE.Group()
+  const loader = new GLTFLoader()
+  loader.load('public/female_orca/scene.gltf', function (gltf) {
+      fish = gltf.scene
+      mixer = new THREE.AnimationMixer(fish);
+      gltf.animations.forEach((animation) => {
+          mixer.clipAction(animation).play();
+      });
+      Orca.add(fish)
+      Orca.matrixAutoUpdate = false
+      const entityManager = new YUKA.EntityManager()
+      const time = new YUKA.Time()
+      const swim = new YUKA.Vehicle()
+      swim.setRenderComponent(Orca, sync)
+
+      const path = new YUKA.Path()
+      const x = -60;
+      const y = -130;
+      const z = 50;
+      path.loop = true
+      path.add(new YUKA.Vector3(0+x, 2+z, 8+y))
+      path.add(new YUKA.Vector3(-2+x, -2+z, 4+y))
+      path.add(new YUKA.Vector3(0+x, 2+z, 0+y))
+      path.add(new YUKA.Vector3(4+x, 0+z, 4+y))
+      path.add(new YUKA.Vector3(8+x, -2+z, 0+y))
+      path.add(new YUKA.Vector3(10+x, 2+z, 4+y))
+      path.add(new YUKA.Vector3(8+x, 0+z, 8+y))
+      path.add(new YUKA.Vector3(4+x, 0+z, 10+y))
+
+      swim.position.copy(path.current())
+
+      const followPathBehavior = new YUKA.FollowPathBehavior(path, 1)
+      swim.steering.add(followPathBehavior)
+      const onPathBehavior = new YUKA.OnPathBehavior(path, 0.5)
+      swim.steering.add(onPathBehavior)
+      entityManager.add(swim)
+      function animate() {
+        requestAnimationFrame(animate)
+        const delta = time.update().getDelta()
+        if (mixer) {
+            mixer.update(0.1);
+        }
+        entityManager.update(delta)
+      }
+      function sync(entity, renderComponent) {
+        renderComponent.matrix.copy(entity.worldMatrix)
+      }
+      animate()
+    }
+  )
+  return Orca
+}
+
+function createTurtle() {
+  let fish;
+  let mixer;
+  const Turtle = new THREE.Group()
+  const loader = new GLTFLoader()
+  loader.load('public/sea_turtle/scene.gltf', function (gltf) {
+      fish = gltf.scene
+      fish.scale.set(2, 2, 2);
+      mixer = new THREE.AnimationMixer(fish);
+      gltf.animations.forEach((animation) => {
+          mixer.clipAction(animation).play();
+      });
+      Turtle.add(fish)
+
+      Turtle.matrixAutoUpdate = false
+      scene.add(Turtle)
+
+      const entityManager = new YUKA.EntityManager()
+      const time = new YUKA.Time()
+      const dive = new YUKA.Vehicle()
+
+      dive.setRenderComponent(Turtle, sync)
+
+      const path = new YUKA.Path()
+      const x = 80;
+      const y = -100;
+      const z = -100
+      path.loop = true
+      path.add(new YUKA.Vector3(0+x, 2+z, 8+y))
+      path.add(new YUKA.Vector3(-2+x, -2+z, 4+y))
+      path.add(new YUKA.Vector3(0+x, 2+z, 0+y))
+      path.add(new YUKA.Vector3(4+x, 0+z, 4+y))
+      path.add(new YUKA.Vector3(8+x, -2+z, 0+y))
+      path.add(new YUKA.Vector3(10+x, 2+z, 4+y))
+      path.add(new YUKA.Vector3(8+x, 0+z, 8+y))
+      path.add(new YUKA.Vector3(4+x, 0+z, 10+y))
+
+      dive.position.copy(path.current())
+
+      const followPathBehavior = new YUKA.FollowPathBehavior(path, 1)
+      dive.steering.add(followPathBehavior)
+      const onPathBehavior = new YUKA.OnPathBehavior(path, 0.5)
+      dive.steering.add(onPathBehavior)
+      entityManager.add(dive)
+      function animate() {
+          requestAnimationFrame(animate)
+          const delta = time.update().getDelta()
+          if (mixer) {
+              mixer.update(0.02);
+          }
+          entityManager.update(delta)
+      }
+      function sync(entity, renderComponent) {
+          renderComponent.matrix.copy(entity.worldMatrix)
+      }
+      animate()
+    }
+  )
+  return Turtle
 }
 
 function setupDirectionalLightControls(directionalLight, parentFolder=None) {
