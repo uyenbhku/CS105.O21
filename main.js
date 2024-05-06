@@ -1,9 +1,10 @@
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { Water } from 'three/addons/objects/Water.js';
-import * as THREE from 'three';
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { Water } from "three/addons/objects/Water.js";
+import * as THREE from "three";
+import * as YUKA from './lib/yuka.module.js';
 
-let scene, camera, renderer, controls, gui;
+let scene, camera, renderer, controls, controls2, gui;
 
 function init() {
     // Initialize a scene
@@ -17,40 +18,42 @@ function init() {
 
     // Orbit Controls
     controls = setupControls();
+    const controls2 = setupControls();
 
     // ROOM
-    var room = createRoom();
+    var room = createRoom(900, 400, 300, 2,);
     scene.add(room)
 
     // Light fixture geometry
     const fixtureGeometry = new THREE.BoxGeometry(6, 2, 6); // Adjust size as needed
     const fixtureMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff }); // White color for fixture
     const fixture = new THREE.Mesh(fixtureGeometry, fixtureMaterial);
-    fixture.position.set(-140, 60, 0); // Position the fixture on the left wall
-    room.add(fixture);
+    fixture.position.set(-73, 60, 0); // Position the fixture on the left wall
     // AMBIENT LIGHT 
     var ambientLight = createAmbientLight(2, 'rgb(255, 255, 255)');
     ambientLight.position.copy(fixture.position); // Position the light at the same position as the fixture
+    ambientLight.add(fixture);
     room.add(ambientLight);
 
-
     // FISH TANK
-    const fishTank = createFishTank();
-    fishTank.position.y -= 123 - 19;
+    let tankHeight = 200;
+    let tankWidth = 170;
+    let tankDepth = 200;
+    const fishTank = createFishTank(tankWidth, tankHeight, tankDepth);
+    fishTank.position.y -= tankHeight/2 - 6;
     fishTank.position.z += 50;
 
     // !!! CODE HERE
     // Add Objects to the scene
     // Con cá trong bể bơi thì thêm vào fishTank
-    // const fishName = createFishName(); 
+    // const fishName = createFishName();
     // fishTank.add(fishName);
 
     // đồ ngoại cảnh thì thêm vào scene
-
     // Thêm blue whale vào hồ
-    const BlueWhale = createBlueWhale();
+    const BlueWhale = createBlueWhale(controls, controls2); 
     BlueWhale.scale.set(0.06, 0.06, 0.06);
-    BlueWhale.position.y = 123 - 100;
+    BlueWhale.position.x = 123 - 100;
     BlueWhale.position.y = 123 - 100;
     BlueWhale.position.z -= 100;
     fishTank.add(BlueWhale);
@@ -78,8 +81,100 @@ function init() {
         })
         .catch(error => console.error('No info', error));
 
+        
+    // Thêm cá vàng Ryukin
+    const RyukinGoldfish = createRyukinGoldfish();
+    RyukinGoldfish.scale.set(2, 2, 2);
+    RyukinGoldfish.position.y = 25;
+    RyukinGoldfish.position.x += 40;
+    RyukinGoldfish.position.z -= 100;
+    fishTank.add(RyukinGoldfish);
+
+    // Thêm sứa
+    const SpottedJellyfish = createSpottedJellyfish();
+    SpottedJellyfish.scale.set(12, 12, 12);
+    SpottedJellyfish.position.y = 15;
+    SpottedJellyfish.position.x -= 60;
+    SpottedJellyfish.position.z -= 100;
+    fishTank.add(SpottedJellyfish);
+
+    //Thêm cua
+    const Crab = createCrab(); 
+    Crab.scale.set(3, 3, 3);
+    Crab.position.x = 0;
+    Crab.position.y = -25;
+    Crab.position.z -= 100;
+    fishTank.add(Crab);
+
+    //Thêm Orca
+    const Orca = createOrca();
+    fishTank.add(Orca);
+
+    // Đọc thông tin từ tệp JSON
+    fetch("orca.json")
+        .then((response) => response.json())
+        .then((data) => {
+          addEventListener("click", function (event) {
+            var mouse = new THREE.Vector2();
+            var raycaster = new THREE.Raycaster();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            // Lấy tên của vật thể được click
+            var intersects = raycaster.intersectObject(Orca);
+            if (intersects.length > 0) {
+            // Kiểm tra xem vật thể được chọn có trong tệp JSON không
+            const objectInfo = data.find((info) => info.name === "Orca");
+            if (objectInfo) {
+                showInfoPanel(
+                  objectInfo.name,
+                  objectInfo.location,
+                  objectInfo.lifespan,
+                  Orca
+                );
+              }
+            }
+          });
+        })
+    .catch((error) => console.error("No info", error));
+
+	
+	//Thêm Turtle
+  	const Turtle = createTurtle();
+  	fishTank.add(Turtle);
+    
+	// Đọc thông tin từ tệp JSON
+  	fetch("turtle.json")
+  	.then((response) => response.json())
+  	.then((data) => {
+		addEventListener("click", function (event) {
+	  	var mouse = new THREE.Vector2();
+	  	var raycaster = new THREE.Raycaster();
+	  	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	  	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+	  	raycaster.setFromCamera(mouse, camera);
+	  	// Lấy tên của vật thể được click
+	  	var intersects = raycaster.intersectObject(Turtle);
+	  	if (intersects.length > 0) {
+			// Kiểm tra xem vật thể được chọn có trong tệp JSON không
+			const objectInfo = data.find((info) => info.name === "Turtle");
+			if (objectInfo) {
+		  		showInfoPanel(
+                objectInfo.name,
+                objectInfo.location,
+                objectInfo.lifespan,
+                Turtle
+              );
+            }
+          }
+        });
+      })
+  	.catch((error) => console.error("No info", error));
+    
     // END CODE
-    scene.add(fishTank)
+    scene.add(fishTank);
+
+    
 
     // TABLE
     const table = createTable();
@@ -93,16 +188,23 @@ function init() {
     directionalLight.intensity = 5;
     scene.add(directionalLight);
     // Create a helper to visualize the directional light's view and frustum
-    const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10);
-    scene.add(directionalLightHelper);
+    const directionalLightHelper = new THREE.DirectionalLightHelper(
+        directionalLight,
+        10
+    );
+    // directionalLight.position.copy();
+    directionalLight.target.position.copy(directionalLightHelper.position);
+    directionalLight.add(directionalLightHelper);
     // LAMP
     const myLamp = createLamp();
     myLamp.position.y += 2;
     myLamp.position.z += 10;
     myLamp.position.x -= 17;
     table.add(myLamp);
-
-
+    // see direction of directional light
+    scene.add(new THREE.CameraHelper(directionalLight.shadow.camera)) 
+    directionalLight.shadowCameraVisible = true;
+    
     // SETUP GUI 
     var lightsFolder = gui.addFolder('Lights');
     // Directional Light Controls
@@ -122,12 +224,12 @@ function init() {
 
     // END SETUP GUI
 
-    // render 
+    // render
     document.body.appendChild(renderer.domElement);
-    // dynamic update 
+    // dynamic update
     update(renderer, scene, camera, controls);
     // responsive
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -135,7 +237,7 @@ function init() {
     return scene;
 }
 
-function createBlueWhale() {
+function createBlueWhale(controls, controls2) {
     const BlueWhale = new THREE.Group();
 
     let mixer;
@@ -147,6 +249,7 @@ function createBlueWhale() {
     loader.load('scene.gltf', (gltf) => {
         console.log('Đang tải model');
         mesh = gltf.scene;
+        mesh.scale.set(0.85, 0.85, 0.85);
 
         mixer = new THREE.AnimationMixer(mesh);
         // Associate animations with the mixer and play them
@@ -157,152 +260,485 @@ function createBlueWhale() {
         // Thêm mesh vào nhóm BlueWhale
         BlueWhale.add(mesh);
 
-        function animate() {
+        const points = [
+            new THREE.Vector3(-1000, 0, -15), // điểm bên trái ở ngoài
+            new THREE.Vector3(-1000, 0, -1000), // điểm bên trái ở trong
+            new THREE.Vector3(1000, 0, -500), // điểm bên phải ở trong
+            new THREE.Vector3(1000, 0, -15), // điểm bên phải ở ngoài
+        ];
+
+        const path = new THREE.CatmullRomCurve3(points, true);
+
+        function animate(time) {
+            const target = controls.target;
+            controls.update();
+            controls2.target.set(target.x, target.y, target.z);
+            controls2.update();
+
+            if (mesh) {
+                const t = (time / 8000 % 6) / 6; // chỉnh speed 
+                const position = path.getPointAt(t);
+                mesh.position.copy(position);
+
+                // Tính toán vector hướng giữa các điểm trong mảng points
+                const index = Math.floor(t * (points.length - 1));
+                const direction = new THREE.Vector3().copy(points[index + 1]).sub(points[index]).normalize();
+
+                // Tính toán góc xoay của mesh dựa trên hướng vector và mềm dần góc quay
+                const targetRotationY = Math.atan2(-direction.z, direction.x) + Math.PI/5; // Quay mesh 180 độ
+                const currentRotationY = mesh.rotation.y;
+                const rotationSpeed = 0.00008; // Tốc độ quay
+
+                // Mềm dần góc quay
+                mesh.rotation.y += rotationSpeed * (targetRotationY - currentRotationY);
+            }
+
             requestAnimationFrame(animate);
+
             // // Update the animation mixer
             if (mixer) {
-                mixer.update(0.1);
+                mixer.update(0.00006);
             }
+
         }
-        // Bắt đầu vòng lặp animate
-        animate();
+        renderer.setAnimationLoop(animate)
     });
 
     return BlueWhale;
 }
 
-function setupDirectionalLightControls(directionalLight, parentFolder = None) {
+function createRyukinGoldfish() {
+    const Ryukin = new THREE.Group();
+    let mixer;
+    let object;
+    const loader = new GLTFLoader();
+    loader.load(
+        `public/ryukin_goldfish/scene.gltf`,
+        function (gltf) {
+        object = gltf.scene;
+        mixer = new THREE.AnimationMixer(object);
+        gltf.animations.forEach((animation) => {
+            mixer.clipAction(animation).play();
+        });
+        Ryukin.add(object);
+        // Tạo quỹ đạo 3D
+        const curve = new THREE.CatmullRomCurve3(
+            [
+            new THREE.Vector3(-7.5, -7.5, -7.5),
+            new THREE.Vector3(7.5, 0, 7.5),
+            new THREE.Vector3(6, 7.5, -4),
+            new THREE.Vector3(-4, 4, 7.5),
+            new THREE.Vector3(-7.5, -7.5, -7.5),
+            ],
+            true
+        );
+        let speed = 0.003;
+        let time = 0;
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            // time += delta;
+            time += speed;
+            const t = time % 1; // t từ 0 đến 1
+            const position = curve.getPointAt(t);
+            object.position.copy(position);
 
+            const index = Math.floor(t * (curve.points.length - 1));
+            const direction = new THREE.Vector3()
+            .copy(curve.points[(index + 1) % curve.points.length])
+            .sub(curve.points[index])
+            .normalize();
+
+            const targetRotationY =
+            Math.atan2(-direction.z, direction.x) + Math.PI / 5;
+            const currentRotationY = object.rotation.y;
+            const rotationSpeed = 0.045; // chỉnh tốc độ quay
+
+            object.rotation.y +=
+                rotationSpeed * (targetRotationY - currentRotationY);
+
+            mixer.update(delta);
+        }
+        animate();
+        },
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+        },
+        function (error) {
+            console.error(error);
+        }
+    );
+  return Ryukin;
+}
+
+function createSpottedJellyfish() {
+    const SpottedJellyfish = new THREE.Group();
+
+    let mixer;
+    let object;
+
+    const loader = new GLTFLoader();
+    loader.load(
+        `public/simple_spotted_jellyfish_baked_animation/scene.gltf`,
+        function (gltf) {
+        object = gltf.scene;
+
+        mixer = new THREE.AnimationMixer(object);
+        gltf.animations.forEach((animation) => {
+            mixer.clipAction(animation).play();
+        });
+
+        SpottedJellyfish.add(object);
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            mixer.update(delta);
+        }
+        animate();
+        },
+        function (xhr) {
+        console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+        },
+        function (error) {
+        console.error(error);
+        }
+    );
+
+    return SpottedJellyfish;
+}
+
+function createCrab() {
+    const Crab = new THREE.Group();
+
+    let mixer;
+    let mesh;
+
+    // Load model
+    const loader = new GLTFLoader().setPath('public/animated_crab/');
+
+    loader.load('scene.gltf', (gltf) => {
+        console.log('Đang tải model');
+        mesh = gltf.scene;
+        mesh.scale.set(3.5, 3.5, 3.5);
+        mesh.rotation.x = Math.PI/8;
+
+        mixer = new THREE.AnimationMixer(mesh);
+        // Associate animations with the mixer and play them
+        gltf.animations.forEach((animation) => {
+            mixer.clipAction(animation).play();
+        });
+
+        // Thêm mesh vào nhóm JellyFish
+        Crab.add(mesh);
+        console.log('Đã tải model crab');
+
+        let upward = true; // Biến để xác định hướng di chuyển
+
+        function animate() {
+            // Di chuyển mesh lên và xuống
+            const amplitude = 25; // Biên độ di chuyển
+            const speed = 0.08; // Tốc độ di chuyển
+
+            if (upward) {
+                mesh.position.x += speed;
+            } else {
+                mesh.position.x -= speed;
+            }
+
+            // Đảo hướng di chuyển khi mesh đạt biên độ di chuyển
+            if (mesh.position.x >= amplitude || mesh.position.x <= -amplitude) {
+                upward = !upward;
+            }
+
+            requestAnimationFrame(animate);
+
+            // // Update the animation mixer
+            if (mixer) {
+                mixer.update(0.03);
+            }
+
+        }
+        renderer.setAnimationLoop(animate)
+    });
+    Crab.rotation.x = -Math.PI / 4; // Rotate group by 30 degrees
+    
+    return Crab;
+}
+
+function createOrca() {
+  let fish;
+  let mixer;
+  const Orca = new THREE.Group()
+  const loader = new GLTFLoader()
+  loader.load('public/female_orca/scene.gltf', function (gltf) {
+      fish = gltf.scene
+      mixer = new THREE.AnimationMixer(fish);
+      gltf.animations.forEach((animation) => {
+          mixer.clipAction(animation).play();
+      });
+      Orca.add(fish)
+      Orca.matrixAutoUpdate = false
+      const entityManager = new YUKA.EntityManager()
+      const time = new YUKA.Time()
+      const swim = new YUKA.Vehicle()
+      swim.setRenderComponent(Orca, sync)
+
+      const path = new YUKA.Path()
+      const x = -60;
+      const y = -130;
+      const z = 50;
+      path.loop = true
+      path.add(new YUKA.Vector3(0+x, 2+z, 8+y))
+      path.add(new YUKA.Vector3(-2+x, -2+z, 4+y))
+      path.add(new YUKA.Vector3(0+x, 2+z, 0+y))
+      path.add(new YUKA.Vector3(4+x, 0+z, 4+y))
+      path.add(new YUKA.Vector3(8+x, -2+z, 0+y))
+      path.add(new YUKA.Vector3(10+x, 2+z, 4+y))
+      path.add(new YUKA.Vector3(8+x, 0+z, 8+y))
+      path.add(new YUKA.Vector3(4+x, 0+z, 10+y))
+
+      swim.position.copy(path.current())
+
+      const followPathBehavior = new YUKA.FollowPathBehavior(path, 1)
+      swim.steering.add(followPathBehavior)
+      const onPathBehavior = new YUKA.OnPathBehavior(path, 0.5)
+      swim.steering.add(onPathBehavior)
+      entityManager.add(swim)
+      function animate() {
+        requestAnimationFrame(animate)
+        const delta = time.update().getDelta()
+        if (mixer) {
+            mixer.update(0.1);
+        }
+        entityManager.update(delta)
+      }
+      function sync(entity, renderComponent) {
+        renderComponent.matrix.copy(entity.worldMatrix)
+      }
+      animate()
+    }
+  )
+  return Orca
+}
+
+function createTurtle() {
+  let fish;
+  let mixer;
+  const Turtle = new THREE.Group()
+  const loader = new GLTFLoader()
+  loader.load('public/sea_turtle/scene.gltf', function (gltf) {
+      fish = gltf.scene
+      fish.scale.set(2, 2, 2);
+      mixer = new THREE.AnimationMixer(fish);
+      gltf.animations.forEach((animation) => {
+          mixer.clipAction(animation).play();
+      });
+      Turtle.add(fish)
+
+      Turtle.matrixAutoUpdate = false
+      scene.add(Turtle)
+
+      const entityManager = new YUKA.EntityManager()
+      const time = new YUKA.Time()
+      const dive = new YUKA.Vehicle()
+
+      dive.setRenderComponent(Turtle, sync)
+
+      const path = new YUKA.Path()
+      const x = 80;
+      const y = -100;
+      const z = -100
+      path.loop = true
+      path.add(new YUKA.Vector3(0+x, 2+z, 8+y))
+      path.add(new YUKA.Vector3(-2+x, -2+z, 4+y))
+      path.add(new YUKA.Vector3(0+x, 2+z, 0+y))
+      path.add(new YUKA.Vector3(4+x, 0+z, 4+y))
+      path.add(new YUKA.Vector3(8+x, -2+z, 0+y))
+      path.add(new YUKA.Vector3(10+x, 2+z, 4+y))
+      path.add(new YUKA.Vector3(8+x, 0+z, 8+y))
+      path.add(new YUKA.Vector3(4+x, 0+z, 10+y))
+
+      dive.position.copy(path.current())
+
+      const followPathBehavior = new YUKA.FollowPathBehavior(path, 1)
+      dive.steering.add(followPathBehavior)
+      const onPathBehavior = new YUKA.OnPathBehavior(path, 0.5)
+      dive.steering.add(onPathBehavior)
+      entityManager.add(dive)
+      function animate() {
+          requestAnimationFrame(animate)
+          const delta = time.update().getDelta()
+          if (mixer) {
+              mixer.update(0.02);
+          }
+          entityManager.update(delta)
+      }
+      function sync(entity, renderComponent) {
+          renderComponent.matrix.copy(entity.worldMatrix)
+      }
+      animate()
+    }
+  )
+  return Turtle
+}
+
+function setupDirectionalLightControls(directionalLight, parentFolder=None) {
     if (!parentFolder) {
         parentFolder = gui;
-    }
-
-    var directionalLightFolder = parentFolder.addFolder('Directional Light');
+        }
+    var directionalLightFolder = parentFolder.addFolder("Directional Light");
     let directionalLightVisible = true; // Initial state of ambient light visibility
-    directionalLightFolder.add(
-        { "visible": directionalLightVisible },
-        "visible"
-    ).onChange((value) => {
+    directionalLightFolder
+        .add({ visible: directionalLightVisible }, "visible")
+        .onChange((value) => {
         directionalLightVisible = value;
         directionalLight.visible = directionalLightVisible; // Toggle ambient light visibility
-    });
+        });
 
     var posDirectionalLightControls = directionalLightFolder.addFolder('Position');
-    var rotDirectionalLightControls = directionalLightFolder.addFolder('Rotation');
+    // var rotDirectionalLightControls = directionalLightFolder.addFolder('Rotation');
     directionalLightFolder.add(directionalLight, 'intensity', 0, 10).name('Intensity');
     directionalLightFolder.addColor(directionalLight, 'color').name('Color');
-    posDirectionalLightControls.add(directionalLight.position, 'x', -50, 50);
-    posDirectionalLightControls.add(directionalLight.position, 'y', -50, 100);
+    posDirectionalLightControls.add(directionalLight.position, 'x', -90, 90);
+    posDirectionalLightControls.add(directionalLight.position, 'y', -100, 100);
     posDirectionalLightControls.add(directionalLight.position, 'z', -50, 50);
-    rotDirectionalLightControls.add(directionalLight.rotation, 'x', -1, 1);
-    rotDirectionalLightControls.add(directionalLight.rotation, 'y', -1, 1);
-    rotDirectionalLightControls.add(directionalLight.rotation, 'z', -1, 1);
+    // rotDirectionalLightControls.add(directionalLight.rotation, 'x', -3.14, 3.14);
+    // rotDirectionalLightControls.add(directionalLight.rotation, 'y', -3.13, 3.14);
+    // rotDirectionalLightControls.add(directionalLight.rotation, 'z', -3.14, 3.14);
 }
 
 function setupAmbientLightControls(ambientLight, parentFolder = None) {
-
     if (!parentFolder) {
         parentFolder = gui;
     }
-    var ambientLightControls = parentFolder.addFolder('Ambient Light');
-    ambientLightControls.add(ambientLight, 'intensity', 0, 2).name('Intensity');
+    var ambientLightControls = parentFolder.addFolder("Ambient Light");
+    ambientLightControls.add(ambientLight, "intensity", 0, 2).name("Intensity");
 
     // turn on and off
     let ambientLightVisible = true; // Initial state of ambient light visibility
-    ambientLightControls.add(
-        { "visible": ambientLightVisible },
-        "visible"
-    ).onChange((value) => {
+    ambientLightControls
+        .add({ visible: ambientLightVisible }, "visible")
+        .onChange((value) => {
         ambientLightVisible = value;
         ambientLight.visible = ambientLightVisible; // Toggle ambient light visibility
     });
+    ambientLightControls.add(ambientLight.position, 'z', -120, 120);
 }
 
 function setupSpotLightControls(spotLight, parentFolder = None) {
-
     if (!parentFolder) {
         parentFolder = gui;
     }
 
     // Spot Light Controls
-    var spotLightFolder = parentFolder.addFolder('Spot Light');
+    var spotLightFolder = parentFolder.addFolder("Spot Light");
     let spotLightVisible = true; // Initial state of ambient light visibility
-    spotLightFolder.add(
-        { "visible": spotLightVisible },
-        "visible"
-    ).onChange((value) => {
+    spotLightFolder
+        .add({ visible: spotLightVisible }, "visible")
+        .onChange((value) => {
         spotLightVisible = value;
         spotLight.visible = spotLightVisible; // Toggle ambient light visibility
-    });
+        });
 
-    var posSpotLightControls = spotLightFolder.addFolder('Position');
-    var rotSpotLightControls = spotLightFolder.addFolder('Rotation');
-    spotLightFolder.add(spotLight, 'intensity', 0, 10).name('Intensity');
-    spotLightFolder.addColor(spotLight, 'color').name('Color');
+    var posSpotLightControls = spotLightFolder.addFolder("Position");
+    var rotSpotLightControls = spotLightFolder.addFolder("Rotation");
+    spotLightFolder.add(spotLight, "intensity", 0, 10).name("Intensity");
+    spotLightFolder.addColor(spotLight, "color").name("Color");
     // spotLightFolder.add(spotLight, 'penumbra', 0, 1);
-    posSpotLightControls.add(spotLight.position, 'x', -22, 22);
-    posSpotLightControls.add(spotLight.position, 'y', -50, 100);
-    posSpotLightControls.add(spotLight.position, 'z', -13, 13);
-    rotSpotLightControls.add(spotLight.rotation, 'x', -1, 1);
-    rotSpotLightControls.add(spotLight.rotation, 'y', -1, 1);
-    rotSpotLightControls.add(spotLight.rotation, 'z', -1, 1);
+    posSpotLightControls.add(spotLight.position, "x", -22, 22);
+    posSpotLightControls.add(spotLight.position, "y", -50, 100);
+    posSpotLightControls.add(spotLight.position, "z", -13, 13);
+    rotSpotLightControls.add(spotLight.rotation, "x", -1, 1);
+    rotSpotLightControls.add(spotLight.rotation, "y", -1, 1);
+    rotSpotLightControls.add(spotLight.rotation, "z", -1, 1);
 }
 
 // returns a room 
-function createRoom() {
+function createRoom(width, length, height, thickness, texturePath='') {
     const room = new THREE.Group();
+    let defaultColor = 'rgb(199, 199, 255)';
+    const textureLoader = new THREE.TextureLoader();
 
     // Wall material
-    const wallMaterial = new THREE.MeshPhongMaterial({
-        color: 'rgb(199, 199, 255)',
-    });
+    let wallMaterial;
+    if (texturePath) {
+        // Create a material with the loaded texture
+        wallMaterial = new THREE.MeshStandardMaterial({
+            map: textureLoader.load(texturePath), // Use the texture for color
+            side: THREE.DoubleSide, // Ensure texture is visible on both sides of the wall
+        });
+    }
+    else {
+        wallMaterial = new THREE.MeshPhysicalMaterial({
+            color: defaultColor,
+        });
+    }
 
     // Floor
-    const floorGeometry = new THREE.BoxGeometry(300, 2, 300);
+    const floorGeometry = new THREE.BoxGeometry(length, thickness, width);
     const floor = new THREE.Mesh(floorGeometry, wallMaterial);
-    floor.position.y = -150;
+    floor.position.y = -height/2;
     floor.receiveShadow = true;
     floor.castShadow = true;
     room.add(floor);
 
     // Left Wall
-    const leftWallGeometry = new THREE.BoxGeometry(2, 300, 300);
+    const leftWallGeometry = new THREE.BoxGeometry(thickness, height, width);
     const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
-    leftWall.position.x = -150;
+    leftWall.position.x = -length/2;
+    // leftWall.position.y = height/2;
     leftWall.receiveShadow = true;
     leftWall.castShadow = true;
     room.add(leftWall);
 
     // Back Wall
-    const backWallGeometry = new THREE.BoxGeometry(300, 300, 2);
+    const backWallGeometry = new THREE.BoxGeometry(length, height, thickness);
     const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
-    backWall.position.z = -150;
+    backWall.position.z = -width/2;
     backWall.castShadow = true;
     backWall.receiveShadow = true;
     room.add(backWall);
 
+    // GUI controls object
+    const wallControls = {
+        'Wall textures': texturePath || '',
+        'Wall color': defaultColor,
+    };
+    gui.add(wallControls, 'Wall textures', {
+        Wood: 'public/textures/wooden.jpg',
+        Rocky: 'public/textures/rocky.jpg',
+        Brick: 'public/textures/brick.jpg',
+        'Gray Brick': 'public/textures/graybricks.jpg',
+    }).onChange(function(value) {
+        // Update wall texture when GUI control changes
+        wallMaterial.map = textureLoader.load(value);
+        wallMaterial.needsUpdate = true;
+    });
+
+    gui.addColor(wallControls, 'Wall color').onChange(function (value) {
+        // Update wall color when GUI control changes
+        wallMaterial.color.set(value);
+    });
+    
     return room;
 }
 
-function createFishTank() {
+function createFishTank(tankWidth=170, tankHeight=200, tankDepth=200) {
     const fishTank = new THREE.Group();
 
-    // Assuming you have variables defining the fish tank size
-    const tankWidth = 170; // Example width of the fish tank
-    const tankHeight = 200; // Example height of the fish tank
-    const tankDepth = 200; // Example depth of the fish tank
-
     // Load fish tank model
-    const loader = new GLTFLoader().setPath('./public/');
-    loader.load('/cage/glass_cage.glb', function (gltf) {
+    const loader = new GLTFLoader().setPath("./public/");
+    loader.load("/cage/glass_cage.glb", function (gltf) {
         const fishTankModel = gltf.scene;
-        fishTankModel.name = 'fish-tank';
+        fishTankModel.name = "fish-tank";
         fishTankModel.scale.set(
             tankWidth, // Example scale factor for width
             tankHeight, // Example scale factor for height
-            tankDepth  // Example scale factor for depth
+            tankDepth  // Example scale factor for thickness
         );
-        fishTankModel.position.set(5, 10, 10);
 
         fishTankModel.traverse((child) => {
             if (child.isMesh) {
@@ -312,29 +748,32 @@ function createFishTank() {
         });
 
         const glass = fishTankModel.getObjectByName("Cube_2");
-        glass.name = 'tank-glass';
+        glass.name = "tank-glass";
         glass.material.transparent = true;
         glass.material.opacity = 0.1;
 
-        const waterSurface = createWaterSurface();
-        const water = createWater();
+        const waterSurface = createWaterSurface(30, 30, 0.0335);
+        const water = createWater(1.85);
         const corals = createCorals();
 
+        waterSurface.position.y = water.geometry.parameters.height/2;
         water.add(corals);
 
+        water.add(waterSurface);
         glass.add(water);
-        glass.add(waterSurface);
 
         const count = waterSurface.geometry.attributes.position.count;
-        const damping = 0.35;
+        const damping = 0.25;
 
         function animate() {
             const now_slow = Date.now() / 400;
             for (let i = 0; i < count; i++) {
                 const x = waterSurface.geometry.attributes.position.getX(i);
                 const y = waterSurface.geometry.attributes.position.getY(i);
+                
                 const xangle = x + now_slow;
                 const xsin = Math.sin(xangle) * damping;
+                
                 const yangle = y + now_slow;
                 const ycos = Math.cos(yangle) * damping;
                 waterSurface.geometry.attributes.position.setZ(i, xsin + ycos);
@@ -353,95 +792,98 @@ function createFishTank() {
     return fishTank;
 }
 
-function createWaterSurface() {
-    const WIDTH = 30;
-    const HEIGHT = 30;
+function createWaterSurface(width=30, height=30, scale=.06) {
     const waterColor = 0x0189F9;
-    const geometry = new THREE.PlaneGeometry(WIDTH, HEIGHT, 300, 300);
-    const waterSurfaceMaterial = new THREE.MeshPhongMaterial({
+    const geometry = new THREE.PlaneGeometry(width, height, 300, 300);
+    const waterSurfaceMaterial = new THREE.MeshPhysicalMaterial({
         color: waterColor, // Use the same color as the water
+        transmission: 0.7,
+        roughness: 0.1,
     });
     const waterSurface = new Water(geometry, waterSurfaceMaterial);
-    waterSurface.name = 'water_surface';
+    waterSurface.name = "water_surface";
     waterSurface.receiveShadow = true;
     waterSurface.castShadow = true;
     waterSurface.rotation.x = -Math.PI / 2;
-    waterSurface.scale.set(0.06, 0.06, 0.06);
-    waterSurface.position.y += 0.84;
+    waterSurface.scale.set(scale, scale, scale);
 
     return waterSurface;
 }
 
-function createWater() {
+function createWater(scale=1.0) {
     const waterColor = 0x0189F9; // Blue color for water
 
     // Create a box geometry or any other geometry representing water
-    const waterGeometry = new THREE.BoxGeometry(1, 1.2, 1); // Adjust size as needed
+    const waterGeometry = new THREE.BoxGeometry(1, 1, 1); // Adjust size as needed
 
     // Create a material for the water (transparent and blue color)
-    const waterMaterial = new THREE.MeshPhongMaterial({
+    const waterMaterial = new THREE.MeshPhysicalMaterial({
         color: waterColor,
         transparent: true,
-        opacity: 0.5, // Adjust opacity as needed
+        transmission: 0.5,
+        roughness: 0.1,
+        opacity: 0.4, // Adjust opacity as needed
     });
 
     // Create the water mesh using the geometry and material
     const waterMesh = new THREE.Mesh(waterGeometry, waterMaterial);
-    waterMesh.name = 'water';
+    waterMesh.name = "water";
 
     // Adjust position and scale of the water mesh
-    waterMesh.scale.set(1.8, 1.8, 1.8);
-    waterMesh.position.y -= 0.25;
+    waterMesh.scale.set(scale, scale, scale);
+    waterMesh.position.y -= 0.2;
 
     return waterMesh;
 }
 
-function createCorals(numberOfCorals = 25) {
+function createCorals(numberOfCorals = 35, scale = .003) {
     const corals = new THREE.Group();
-    const scale = 0.005;
 
     // Helper function to change coral color
     function changeCoralColor(coralModel, color) {
         coralModel.traverse((child) => {
-            if (child.isMesh) {
-                child.material.color.set(color);
-            }
+        if (child.isMesh) {
+            child.material.color.set(color);
+        }
         });
     }
 
-    const loader = new GLTFLoader().setPath('./public/');
+    const loader = new GLTFLoader().setPath("./public/");
     const coralModels = [
-        '/corals/Coral0.glb',
-        '/corals/Coral1.glb',
-        '/corals/Coral2.glb',
-        '/corals/Coral3.glb',
-        '/corals/Coral4.glb',
-        '/corals/Coral5.glb',
-        '/corals/Coral6.glb'
+        "/corals/Coral0.glb",
+        "/corals/Coral1.glb",
+        "/corals/Coral2.glb",
+        "/corals/Coral3.glb",
+        "/corals/Coral4.glb",
+        "/corals/Coral5.glb",
+        "/corals/Coral6.glb",
     ];
 
     // fixed corals
-    loader.load('/corals/Coral0.glb', function (gltf) {
+    // red one
+    loader.load("/corals/Coral0.glb", function (gltf) {
         const coralModel = gltf.scene;
-        coralModel.scale.set(scale, scale, scale);
+        coralModel.scale.set(scale + 0.006, scale + 0.006, scale + 0.006);
         coralModel.position.x = 0.38;
-        coralModel.position.y = -0.45;
+        coralModel.position.y = -0.44;
         coralModel.position.z = -0.4;
-        changeCoralColor(coralModel, 0xff0000);
+        changeCoralColor(coralModel, 0xfb0000);
         corals.add(coralModel);
     });
 
-    loader.load('/corals/Coral1.glb', function (gltf) {
+    // green one
+    loader.load("/corals/Coral1.glb", function (gltf) {
         const coralModel = gltf.scene;
-        coralModel.scale.set(scale, scale, scale);
-        coralModel.position.x = -0.38;
-        coralModel.position.y = -0.5;
-        coralModel.position.z = -0.35;
-        changeCoralColor(coralModel, 0xffff00);
+        coralModel.scale.set(scale + 0.006, scale + 0.006, scale + 0.006);
+        coralModel.position.x = 0.28;
+        coralModel.position.y = -0.4;
+        coralModel.position.z = 0.2;
+        coralModel.rotation.y = Math.PI;
+        changeCoralColor(coralModel, 0x00ee00);
         corals.add(coralModel);
     });
 
-    loader.load('/corals/Coral2.glb', function (gltf) {
+    loader.load("/corals/Coral2.glb", function (gltf) {
         const coralModel = gltf.scene;
         coralModel.scale.set(scale, scale, scale);
         coralModel.position.x = -0.32;
@@ -451,7 +893,7 @@ function createCorals(numberOfCorals = 25) {
         corals.add(coralModel);
     });
 
-    loader.load('/corals/Coral3.glb', function (gltf) {
+    loader.load("/corals/Coral3.glb", function (gltf) {
         const coralModel = gltf.scene;
         coralModel.scale.set(scale, scale, scale);
         coralModel.position.x = 0.32;
@@ -461,30 +903,29 @@ function createCorals(numberOfCorals = 25) {
         corals.add(coralModel);
     });
 
-    loader.load('/corals/Coral4.glb', function (gltf) {
+    loader.load("/corals/Coral4.glb", function (gltf) {
         const coralModel = gltf.scene;
-        coralModel.scale.set(scale, scale, scale);
-        coralModel.position.x = -0.32;
+        coralModel.scale.set(scale + 0.006, scale + 0.006, scale + 0.006);
+        coralModel.position.x = -0.37;
         coralModel.position.y = -0.5;
+        coralModel.position.z = -0.3;
         coralModel.rotation.y = -0.5;
-        coralModel.position.z = 0.3;
         changeCoralColor(coralModel, 0x051094);
         corals.add(coralModel);
     });
 
-    loader.load('/corals/Coral5.glb', function (gltf) {
+    loader.load("/corals/Coral5.glb", function (gltf) {
         const coralModel = gltf.scene;
-        coralModel.scale.set(scale, scale, scale);
-
+        coralModel.scale.set(scale + 0.002, scale + 0.001, scale + 0.003);
         coralModel.position.x = -0.4;
-        coralModel.position.y = -0.5;
+        coralModel.position.y = -0.45;
         coralModel.rotation.y = -0.5;
-        coralModel.position.z = 0.4;
+        coralModel.position.z = 0.39;
         changeCoralColor(coralModel, 0xff1ff4);
         corals.add(coralModel);
     });
 
-    loader.load('/corals/Coral6.glb', function (gltf) {
+    loader.load("/corals/Coral6.glb", function (gltf) {
         const coralModel = gltf.scene;
         const rScale = THREE.MathUtils.randFloat(-(scale + 0.002), scale + 0.001);
         coralModel.scale.set(rScale, rScale, rScale);
@@ -503,149 +944,142 @@ function createCorals(numberOfCorals = 25) {
         const coralPath = coralModels[randomCoralIndex];
 
         loader.load(coralPath, function (gltf) {
-            const coralModel = gltf.scene;
-            coralModel.scale.set(scale, scale, scale);
+        const coralModel = gltf.scene;
+        coralModel.scale.set(scale, scale, scale);
 
             // Generate random position within a range
-            const posX = THREE.MathUtils.randFloat(-0.36, 0.36); // Adjust range as needed
+            const posX = THREE.MathUtils.randFloat(-0.4, 0.4); // Adjust range as needed
             const posY = -0.4;
-            const posZ = THREE.MathUtils.randFloat(-.39, .39); // Adjust range as needed
+            const posZ = THREE.MathUtils.randFloat(-.42, .42); // Adjust range as needed
             coralModel.position.set(posX, posY, posZ);
-            coralModel.rotation.y = THREE.MathUtils.randFloat(-1, 1);
+            coralModel.rotation.y = THREE.MathUtils.randFloat(-Math.PI, Math.PI);
 
-            // Change coral color if needed
-            const randomColor = Math.random() * 0xffffff;
-            changeCoralColor(coralModel, randomColor);
+        // Change coral color if needed
+        const randomColor = Math.random() * 0xffffff;
+        changeCoralColor(coralModel, randomColor);
 
-            corals.add(coralModel);
+        corals.add(coralModel);
 
-            // Check if all corals have been loaded
-            if (corals.children.length === numberOfCorals) {
-                // All corals are loaded
-                console.log('All corals loaded:', corals);
-            }
+        // Check if all corals have been loaded
+        if (corals.children.length === numberOfCorals) {
+            // All corals are loaded
+            console.log("All corals loaded:", corals);
+        }
         });
     }
 
     return corals;
 }
 
-function createTable() {
+function createTable(tableWidth=50, tableLength=50, tableThickness=2, legWidth=2, legHeight=25, legDepth=2, scale=1.0) {
     const table = new THREE.Group();
 
     // Table top
-    const tableTopGeometry = new THREE.BoxGeometry(50, 2, 30);
-    const tableTopMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
-    const tableTop = new THREE.Mesh(tableTopGeometry, tableTopMaterial);
+    const texture = new THREE.TextureLoader().load('public/textures/wooden.jpg'); 
+    const material = new THREE.MeshStandardMaterial({
+        map: texture, // Use the texture for color
+        side: THREE.DoubleSide, // Ensure texture is visible on both sides of the wall
+    });
+    const tableTopGeometry = new THREE.BoxGeometry(tableWidth, tableThickness, tableLength);
+    const tableTop = new THREE.Mesh(tableTopGeometry, material);
     tableTop.castShadow = true; // Enable shadow casting
     tableTop.receiveShadow = true; // Enable shadow receiving
     table.add(tableTop);
 
-    // Leg parameters
-    const legWidth = 2;
-    const legHeight = 25;
-    const legDepth = 2;
-
     // Leg 1
     const leg1Geometry = new THREE.BoxGeometry(legWidth, legHeight, legDepth);
-    const leg1Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
-    const leg1 = new THREE.Mesh(leg1Geometry, leg1Material);
-    leg1.position.set(-20, -12, -13);
+    const leg1 = new THREE.Mesh(leg1Geometry, material);
+    leg1.position.set(-(tableWidth/2 - 5), -(legHeight/2), -(tableLength/2 - 3));
     leg1.castShadow = true;
     leg1.receiveShadow = true;
     table.add(leg1);
 
     // Leg 2
     const leg2Geometry = new THREE.BoxGeometry(legWidth, legHeight, legDepth);
-    const leg2Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
-    const leg2 = new THREE.Mesh(leg2Geometry, leg2Material);
+    const leg2 = new THREE.Mesh(leg2Geometry, material);
     leg2.castShadow = true;
     leg2.receiveShadow = true;
-    leg2.position.set(20, -12, -13);
+    leg2.position.set((tableWidth/2 - 5), -(legHeight/2), -(tableLength/2 - 3));
     table.add(leg2);
 
     // Leg 3
     const leg3Geometry = new THREE.BoxGeometry(legWidth, legHeight, legDepth);
-    const leg3Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
-    const leg3 = new THREE.Mesh(leg3Geometry, leg3Material);
+    const leg3 = new THREE.Mesh(leg3Geometry, material);
     leg3.castShadow = true;
     leg3.receiveShadow = true;
-    leg3.position.set(-20, -12, 13);
+    leg3.position.set(-(tableWidth/2 - 5), -legHeight/2, (tableLength/2 - 3));
     table.add(leg3);
 
     // Leg 4
     const leg4Geometry = new THREE.BoxGeometry(legWidth, legHeight, legDepth);
-    const leg4Material = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Brown color
-    const leg4 = new THREE.Mesh(leg4Geometry, leg4Material);
+    const leg4 = new THREE.Mesh(leg4Geometry, material);
     leg4.castShadow = true;
     leg4.receiveShadow = true;
-    leg4.position.set(20, -12, 13);
+    leg4.position.set((tableWidth/2 - 5), -legHeight/2, (tableLength/2 - 3));
     table.add(leg4);
 
+    table.scale.set(scale, scale, scale);
     return table;
 }
 
-function createLamp() {
+function createLamp(scale=1.0) {
     const lamp = new THREE.Group();
 
     // Lamp base
     const baseGeometry = new THREE.BoxGeometry(4, 1, 4);
-    const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x606060 }); // Gray color
+    const baseMaterial = new THREE.MeshPhysicalMaterial({ color: 0x606060 }); // Gray color
     const base = new THREE.Mesh(baseGeometry, baseMaterial);
+    base.castShadow = true;
     lamp.add(base);
 
     // Lamp stand
     const standGeometry = new THREE.CylinderGeometry(0.5, 0.5, 20, 32);
-    const standMaterial = new THREE.MeshPhongMaterial({ color: 0x606060 }); // Gray color
+    const standMaterial = new THREE.MeshPhysicalMaterial({ color: 0x606060 }); // Gray color
     const stand = new THREE.Mesh(standGeometry, standMaterial);
     stand.position.y = 10; // Position the stand above the base
     lamp.add(stand);
+    stand.castShadow = true;
+    stand.receiveShadow = true;
 
     // Lamp shade
     const shadeGeometry = new THREE.ConeGeometry(6, 12, 32);
-    const shadeMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFF00 }); // Yellow color
+    const shadeMaterial = new THREE.MeshPhysicalMaterial({ color: 0xFFFF00 }); // Yellow color
     const shade = new THREE.Mesh(shadeGeometry, shadeMaterial);
     shade.position.y = 20; // Position the shade above the stand
+    shade.castShadow = true;
+    shade.receiveShadow = true;
     lamp.add(shade);
+    lamp.scale.set(scale, scale, scale);
 
     return lamp;
 }
 
 function createDirectionalLight(intensity, color = 0xffffff) {
-    var light = new THREE.DirectionalLight(
-        color,
-        intensity
-    );
+    var light = new THREE.DirectionalLight(color, intensity);
     light.castShadow = true;
 
     // Configure shadow parameters
-    light.shadow.mapSize.width = 1024; // Set shadow map width (higher resolution)
-    light.shadow.mapSize.height = 1024; // Set shadow map height (higher resolution)
+    light.shadow.mapSize.width = 100; // Set shadow map width (higher resolution)
+    light.shadow.mapSize.height = 100; // Set shadow map height (higher resolution)
     light.shadow.camera.near = 1; // Near plane of the shadow camera
     light.shadow.camera.far = 50; // Far plane of the shadow camera
-    light.shadow.camera.left = -10; // Left frustum edge
-    light.shadow.camera.right = 10; // Right frustum edge
-    light.shadow.camera.top = 20; // Top frustum edge
-    light.shadow.camera.bottom = -20; // Bottom frustum edge
+    light.shadow.camera.left = -100; // Left frustum edge
+    light.shadow.camera.right = 100; // Right frustum edge
+    light.shadow.camera.top = 200; // Top frustum edge
+    light.shadow.camera.bottom = -200; // Bottom frustum edge
     light.shadow.bias = -0.001; // Bias to avoid shadow acne
     light.shadow.camera.visible = true; // Show the shadow camera helper
-
+    light.shadowDarkness = 0.5;
     return light;
 }
 
 function createAmbientLight(intensity, color = 0xffffff) {
-    var light = new THREE.AmbientLight(
-        color,
-        intensity
-    );
+    var light = new THREE.AmbientLight(color, intensity);
     return light;
 }
 
 function createSpotLight(intensity, color = 0xffffff, angle = Math.PI / 6) {
-    var light = new THREE.SpotLight(
-        color,
-        intensity
-    );
+    var light = new THREE.SpotLight(color, intensity);
     light.castShadow = true;
     light.shadow.bias = 0.001;
     light.shadow.camera.visible = true; // Show the shadow camera helper
@@ -657,13 +1091,14 @@ function createSpotLight(intensity, color = 0xffffff, angle = Math.PI / 6) {
 
 function setupRenderer() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    // set size 
+    // set size
     renderer.setSize(window.innerWidth, window.innerHeight);
-    // set scene background 
-    renderer.setClearColor('rgb(100, 100, 100)')
+    // set scene background
+    renderer.setClearColor("rgb(100, 100, 100)");
     renderer.physicallyCorrectLights = true;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMapSoft = true;
 
     return renderer;
 }
@@ -682,6 +1117,7 @@ function setupCamera() {
 function setupControls() {
     controls = new OrbitControls(camera, renderer.domElement);
     controls.target = new THREE.Vector3(0, 0, 0);
+    controls.maxDistance = 800;
     controls.update();
     return controls;
 }
@@ -698,36 +1134,47 @@ function update(renderer, scene, camera, controls) {
 }
 
 function showInfoPanel(x, y, z, object) {
-    var infoPanel = document.createElement('div');
-    infoPanel.style.position = 'absolute';
+    var infoPanel = document.createElement("div");
+    infoPanel.style.position = "absolute";
     // Lấy vị trí thế giới của vật thể
     var objectWorldPosition = new THREE.Vector3();
     object.getWorldPosition(objectWorldPosition);
 
     // Chuyển đổi vị trí thế giới thành vị trí màn hình
     var vector = objectWorldPosition.project(camera);
-    vector.x = (vector.x + 1) / 2 * window.innerWidth;
-    vector.y = -(vector.y - 1) / 2 * window.innerHeight;
+    vector.x = ((vector.x + 1) / 2) * window.innerWidth;
+    vector.y = (-(vector.y - 1) / 2) * window.innerHeight;
 
-    infoPanel.style.top = vector.y + 'px';
-    infoPanel.style.left = vector.x + 'px';
+    infoPanel.style.top = vector.y + "px";
+    infoPanel.style.left = vector.x + "px";
 
-    infoPanel.style.background = 'rgba(255,255,255,0.8)';
-    infoPanel.style.padding = '10px';
-    infoPanel.style.whiteSpace = 'pre-line';
-    infoPanel.textContent = 'Thông tin sinh vật: \n' + 'Tên: ' + x + '\n' + 'Nơi sống: ' + y + '\n' + 'Tuổi thọ trung bình: ' + z;
+    infoPanel.style.background = "rgba(255,255,255,0.8)";
+    infoPanel.style.padding = "10px";
+    infoPanel.style.whiteSpace = "pre-line";
+    infoPanel.textContent =
+        "Thông tin sinh vật: \n" +
+        "Tên: " +
+        x +
+        "\n" +
+        "Nơi sống: " +
+        y +
+        "\n" +
+        "Tuổi thọ trung bình: " +
+        z;
     document.body.appendChild(infoPanel);
     // Hide the info panel after 5 seconds
     setTimeout(() => {
         document.body.removeChild(infoPanel);
     }, 10000);
     // Hide the info panel when the user clicks anywhere on the screen
-    document.addEventListener('click', function () {
+    document.addEventListener("click", function () {
         document.body.removeChild(infoPanel);
     });
     // show the info panel when the object is clicked
-    document.addEventListener('click', function () {
+    document.addEventListener("click", function () {
         showInfoPanel();
     });
 }
+
+
 init();
