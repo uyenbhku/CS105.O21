@@ -3,11 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Final Project CS105</title>
-		<style>
-			body { 
-				background-color: #5964ff;
-				margin: 0; }
-		</style>
+		<link rel="stylesheet" href="styles.css">
 		<script type="importmap">
 			{
 			  "imports": {
@@ -18,6 +14,16 @@
 		</script>
 	</head>
 	<body>
+		<div class="welcome-page-container">
+			<h1>Online Aquarium</h1>
+			<h2>Final project CS105</h2>
+			<h3>Instructor: MsC. Cap Pham Dinh Thang</h3>
+			<button id="hide-welcome-page-btn" type="button">Start</button>
+			<div class="progress-bar-container">
+				<label id="label-progress-bar" for="progress-bar"></label>
+				<progress id="progress-bar" value=0 max=100></progress>
+			</div>
+		</div>
 		<script type="module" src="./main.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
 	</body>
