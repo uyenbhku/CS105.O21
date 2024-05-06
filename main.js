@@ -21,18 +21,21 @@ function init() {
     const controls2 = setupControls();
 
     // ROOM
-    var room = createRoom(900, 400, 300, 2,);
+    var room = createRoom(700, 400, 300, 2,);
+    room.name = 'room';
     scene.add(room)
 
     // Light fixture geometry
     const fixtureGeometry = new THREE.BoxGeometry(6, 2, 6); // Adjust size as needed
     const fixtureMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff }); // White color for fixture
     const fixture = new THREE.Mesh(fixtureGeometry, fixtureMaterial);
+    fixture.name = 'fixture';
     fixture.position.set(-73, 60, 0); // Position the fixture on the left wall
     // AMBIENT LIGHT 
     var ambientLight = createAmbientLight(2, 'rgb(255, 255, 255)');
     ambientLight.position.copy(fixture.position); // Position the light at the same position as the fixture
     ambientLight.add(fixture);
+    ambientLight.name = 'ambientLight';
     room.add(ambientLight);
 
     // FISH TANK
@@ -42,6 +45,7 @@ function init() {
     const fishTank = createFishTank(tankWidth, tankHeight, tankDepth);
     fishTank.position.y -= tankHeight/2 - 6;
     fishTank.position.z += 50;
+    fishTank.name = 'fishTank'
 
     // !!! CODE HERE
     // Add Objects to the scene
@@ -56,34 +60,59 @@ function init() {
     BlueWhale.position.x = 123 - 100;
     BlueWhale.position.y = 123 - 100;
     BlueWhale.position.z -= 100;
+    BlueWhale.name = 'BlueWhale';
     fishTank.add(BlueWhale);
     
     // Đọc thông tin từ tệp JSON
     fetch('info.json')
-        .then(response => response.json())
-        .then(data => {
-            addEventListener('click', function (event) {
-                var mouse = new THREE.Vector2();
-                var raycaster = new THREE.Raycaster();
-                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                raycaster.setFromCamera(mouse, camera);
-                // Lấy tên của vật thể được click
-                var intersects = raycaster.intersectObject(BlueWhale);
-                if (intersects.length > 0) {
-                    // Kiểm tra xem vật thể được chọn có trong tệp JSON không
-                    const objectInfo = data.find(info => info.name === "BlueWhale");
-                    if (objectInfo) {
-                        showInfoPanel(objectInfo.name, objectInfo.location, objectInfo.lifespan, BlueWhale);
-                    }
-                }
-            });
-        })
-        .catch(error => console.error('No info', error));
+	.then(response => response.json())
+	.then(data => {
+		addEventListener('click', function (event) {
+			// REVIEW: ông Giáp đang thắc mắc là với mỗi con sinh vật thì ông sẽ dùng lại đoạn 
+			// code này phải không? Nếu đúng vậy thì ổng đề tổng quát hóa cái này, chỉ có 1 chỗ duy nhất 
+			// để xử lý chung cho các con vật để code gọn hơn
+			// Tui có thêm tên của con vật bằng tên của tụi nó, vd ông có thể xem 
+			// tên của con BlueWhale bằng BlueWhale.name
+			// Bên cạnh đó, tui nghĩ file JSON hiện tại gồm 3 keys như vậy thì cũng ok
+			// nhưng mà tui nghĩ ông nên để ý 1 cái là name và display name
+			// Khi hiển thị cho người dùng, tuyệt đối không có sai chính tả hay ghi như BlueWhale
+			// ghi như vậy sẽ chỉ hỗ trợ code nó dễ hơn thui nè
+			// display name sẽ là tên mà hiển thị ra cho người dùng một cách thân thiện hơn như:
+			// Cá voi xanh, Cá vàng Ryukin,...
+			var mouse = new THREE.Vector2();
+			var raycaster = new THREE.Raycaster();
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+			raycaster.setFromCamera(mouse, camera);
+			// Lấy tên của vật thể được click
+			var intersects = raycaster.intersectObject(BlueWhale);
+			if (intersects.length > 0) {
+				// Kiểm tra xem vật thể được chọn có trong tệp JSON không
+				
+				// REVIEW: cái này có độ phức tạp O(n), vậy là mỗi lần click là nó sẽ chạy O(n)
+				// nếu với số lượng nhỏ là 6 maybe thì nó ko quá tốn resource nhưng khi số lượng nhiều hơn là
+				// lag liền
+				// Tui thấy các con cá nó có thể sử dụng cơ chế hashtable hay dictionary đó
+				// khi search info con cá chỉ cần O(1) là được rùi nè
+				// Gợi ý: fetch info.json 1 lần duy nhất vào 1 cái dictionary với key là tên con cá và value
+				// là thông tin con cá, cách này nếu làm với database có thể update thì ko tốt, nhưng 
+				// với hiện tại thì chỉ cần 1 lần đọc
+				const objectInfo = data.find(info => info.name === 'BlueWhale');
+				if (objectInfo) {
+					// REVIEW: nếu ông vô hàm này xem review rồi thì ông sẽ thấy tui bảo
+					// là một event listener trong đó có vẻ không cần thiết. Lý do 
+					// là vì chính chỗ này đã là cái trigger cho cái event đó rồi nè
+					showInfoPanel(objectInfo.name, objectInfo.location, objectInfo.lifespan, BlueWhale);
+				}
+			}
+		});
+	})
+	.catch(error => console.error('No info', error));
 
         
     // Thêm cá vàng Ryukin
     const RyukinGoldfish = createRyukinGoldfish();
+	RyukinGoldfish.name = 'RyukinGoldFish';
     RyukinGoldfish.scale.set(2, 2, 2);
     RyukinGoldfish.position.y = 25;
     RyukinGoldfish.position.x += 40;
@@ -92,6 +121,7 @@ function init() {
 
     // Thêm sứa
     const SpottedJellyfish = createSpottedJellyfish();
+	SpottedJellyfish.name = 'SpottedJellyfish';
     SpottedJellyfish.scale.set(12, 12, 12);
     SpottedJellyfish.position.y = 15;
     SpottedJellyfish.position.x -= 60;
@@ -100,6 +130,7 @@ function init() {
 
     //Thêm cua
     const Crab = createCrab(); 
+	Crab.name = 'Crab';
     Crab.scale.set(3, 3, 3);
     Crab.position.x = 0;
     Crab.position.y = -25;
@@ -108,72 +139,16 @@ function init() {
 
     //Thêm Orca
     const Orca = createOrca();
+	Orca.name = 'Orca';
     fishTank.add(Orca);
 
-    // Đọc thông tin từ tệp JSON
-    fetch("orca.json")
-        .then((response) => response.json())
-        .then((data) => {
-          addEventListener("click", function (event) {
-            var mouse = new THREE.Vector2();
-            var raycaster = new THREE.Raycaster();
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            // Lấy tên của vật thể được click
-            var intersects = raycaster.intersectObject(Orca);
-            if (intersects.length > 0) {
-            // Kiểm tra xem vật thể được chọn có trong tệp JSON không
-            const objectInfo = data.find((info) => info.name === "Orca");
-            if (objectInfo) {
-                showInfoPanel(
-                  objectInfo.name,
-                  objectInfo.location,
-                  objectInfo.lifespan,
-                  Orca
-                );
-              }
-            }
-          });
-        })
-    .catch((error) => console.error("No info", error));
-
-	
 	//Thêm Turtle
   	const Turtle = createTurtle();
+	Turtle.name = 'Turtle';
   	fishTank.add(Turtle);
-    
-	// Đọc thông tin từ tệp JSON
-  	fetch("turtle.json")
-  	.then((response) => response.json())
-  	.then((data) => {
-		addEventListener("click", function (event) {
-	  	var mouse = new THREE.Vector2();
-	  	var raycaster = new THREE.Raycaster();
-	  	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-	  	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-	  	raycaster.setFromCamera(mouse, camera);
-	  	// Lấy tên của vật thể được click
-	  	var intersects = raycaster.intersectObject(Turtle);
-	  	if (intersects.length > 0) {
-			// Kiểm tra xem vật thể được chọn có trong tệp JSON không
-			const objectInfo = data.find((info) => info.name === "Turtle");
-			if (objectInfo) {
-		  		showInfoPanel(
-                objectInfo.name,
-                objectInfo.location,
-                objectInfo.lifespan,
-                Turtle
-              );
-            }
-          }
-        });
-      })
-  	.catch((error) => console.error("No info", error));
-    
+	
     // END CODE
-    scene.add(fishTank);
-
+	scene.add(fishTank);
     
 
     // TABLE
@@ -181,6 +156,7 @@ function init() {
     table.position.y -= 150 - 25;
     table.position.z += 110;
     table.position.x -= 30;
+    table.name = 'table';
     scene.add(table);
 
     // LIGHTING
@@ -194,17 +170,18 @@ function init() {
     );
     // directionalLight.position.copy();
     directionalLight.target.position.copy(directionalLightHelper.position);
+    directionalLight.name = 'directionalLight';
     directionalLight.add(directionalLightHelper);
     // LAMP
     const myLamp = createLamp();
     myLamp.position.y += 2;
     myLamp.position.z += 10;
     myLamp.position.x -= 17;
+    myLamp.name = 'lampOnTheTable';
     table.add(myLamp);
     // see direction of directional light
     scene.add(new THREE.CameraHelper(directionalLight.shadow.camera)) 
     directionalLight.shadowCameraVisible = true;
-    
     // SETUP GUI 
     var lightsFolder = gui.addFolder('Lights');
     // Directional Light Controls
@@ -234,6 +211,8 @@ function init() {
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    console.log(scene);
     return scene;
 }
 
@@ -303,7 +282,7 @@ function createBlueWhale(controls, controls2) {
         }
         renderer.setAnimationLoop(animate)
     });
-
+    
     return BlueWhale;
 }
 
@@ -733,7 +712,7 @@ function createFishTank(tankWidth=170, tankHeight=200, tankDepth=200) {
     const loader = new GLTFLoader().setPath("./public/");
     loader.load("/cage/glass_cage.glb", function (gltf) {
         const fishTankModel = gltf.scene;
-        fishTankModel.name = "fish-tank";
+        fishTankModel.name = "tank";
         fishTankModel.scale.set(
             tankWidth, // Example scale factor for width
             tankHeight, // Example scale factor for height
@@ -838,6 +817,7 @@ function createWater(scale=1.0) {
 
 function createCorals(numberOfCorals = 35, scale = .003) {
     const corals = new THREE.Group();
+    corals.name = 'corals';
 
     // Helper function to change coral color
     function changeCoralColor(coralModel, color) {
@@ -860,18 +840,18 @@ function createCorals(numberOfCorals = 35, scale = .003) {
     ];
 
     // fixed corals
-    // red one
+    // green one
     loader.load("/corals/Coral0.glb", function (gltf) {
         const coralModel = gltf.scene;
-        coralModel.scale.set(scale + 0.006, scale + 0.006, scale + 0.006);
+        coralModel.scale.set(scale + 0.003, scale + 0.003, scale + 0.003);
         coralModel.position.x = 0.38;
         coralModel.position.y = -0.44;
         coralModel.position.z = -0.4;
-        changeCoralColor(coralModel, 0xfb0000);
+        changeCoralColor(coralModel, 0x00ee12);
         corals.add(coralModel);
     });
 
-    // green one
+    // red one
     loader.load("/corals/Coral1.glb", function (gltf) {
         const coralModel = gltf.scene;
         coralModel.scale.set(scale + 0.006, scale + 0.006, scale + 0.006);
@@ -879,7 +859,7 @@ function createCorals(numberOfCorals = 35, scale = .003) {
         coralModel.position.y = -0.4;
         coralModel.position.z = 0.2;
         coralModel.rotation.y = Math.PI;
-        changeCoralColor(coralModel, 0x00ee00);
+        changeCoralColor(coralModel, 0xffa523);
         corals.add(coralModel);
     });
 
@@ -1126,7 +1106,7 @@ function update(renderer, scene, camera, controls) {
     // Render the scene
     renderer.render(scene, camera);
 
-    controls.update();
+    // controls.update();
     // handle the render of the scene
     requestAnimationFrame(function () {
         update(renderer, scene, camera, controls);
@@ -1138,6 +1118,7 @@ function showInfoPanel(x, y, z, object) {
     infoPanel.style.position = "absolute";
     // Lấy vị trí thế giới của vật thể
     var objectWorldPosition = new THREE.Vector3();
+	console.log(object)
     object.getWorldPosition(objectWorldPosition);
 
     // Chuyển đổi vị trí thế giới thành vị trí màn hình
@@ -1162,14 +1143,34 @@ function showInfoPanel(x, y, z, object) {
         "Tuổi thọ trung bình: " +
         z;
     document.body.appendChild(infoPanel);
-    // Hide the info panel after 5 seconds
+
+    // Hide the info panel after 10 seconds
+	// REVIEW: khúc này nên nằm ngoài hàm này, cái hàm này chỉ Show thui, ko có Hide
+
+	// Review Logic:
+	// Bây giờ logic chỗ này đá nhau nè, ông thấy là ông đã handle click ở ngoài rùi, 
+	// giờ ví dụ trong 10s đó ông đã hide nó đi bằng click, 
+	// vậy thì cái setTimeout này nó sẽ làm gì? Hay nó throw error?
+	// Hơn nữa, tại sao lại phải remove nó sau 10s? Việc này sẽ mang lại trải nghiệm tốt hơn?
+	// Rồi giả sử người dùng người ta muốn xem lâu hơn thì sao? Ông đã handle trường hợp này 
+	// chưa?
     setTimeout(() => {
+		console.log('remove timeout')
         document.body.removeChild(infoPanel);
     }, 10000);
+
     // Hide the info panel when the user clicks anywhere on the screen
+	// REVIEW: khúc này thì tui hiểu ý ông nè, nhưng mà tui nghĩ là anywhere thì hơi kỳ,
+	// Hiện tại tui click vào ô infoPanel thì nó cũng biến mất á, mà theo trải nghiệm
+	// ở nhiều trang khác, tui thấy thường là tui click vào cái đó để giữ lại hoặc xem lâu hơn 
+	// đề xuất: hide the info panel when the user clicks anywhere OUTSIDE infoPanel
     document.addEventListener("click", function () {
-        document.body.removeChild(infoPanel);
+		console.log('remove click outside')
+		document.body.removeChild(infoPanel);
     });
+
+	// REVIEW: tại sao lại có thêm cái này? Ông gọi cái này từ cái event listener click
+	// trong cái fetch ở tuốt trên kia rồi, vậy mục đích mấy dòng này là gì?
     // show the info panel when the object is clicked
     document.addEventListener("click", function () {
         showInfoPanel();

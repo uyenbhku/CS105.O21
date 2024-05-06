@@ -4,7 +4,6 @@
         "location": "Ấn Độ Dương, Thái Bình Dương",
         "lifespan": "80-90 năm"
     },
-    
     {
         "name": "Jellyfish",
         "location": "Mọi đại dương",
@@ -21,5 +20,17 @@
         "name": "SpottedJellyfish",
         "location": "Ấn Độ Dương, Thái Bình Dương",
         "lifespan": "vài tháng-1 năm"
-    }
+    },
+
+    {
+        "name": "Turtle",
+        "location": "Central America, Mexico and the Galapagos Islands",
+        "lifespan": "70-80 năm"
+    },
+
+    {
+        "name": "Orca",
+        "location": "Vùng biển đông bắc Đại Tây Dương xung quanh bờ biển Na Uy, ở phía bắc Thái Bình Dương dọc theo quần đảo Aleut, Vịnh Alaska và ở vùng Nam Đại Dương nằm ở xa Châu Nam Cực",
+        "lifespan": "80-90 năm"
+    } 
 ]
