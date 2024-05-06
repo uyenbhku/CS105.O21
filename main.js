@@ -6,7 +6,43 @@ import * as YUKA from './lib/yuka.module.js';
 
 let scene, camera, renderer, controls, controls2, gui;
 
+////// WELCOME PAGE
+const progressBar = document.getElementById('progress-bar');
+const welcomePageContainer = document.querySelector('.welcome-page-container');
+const progressBarContainer = document.querySelector('.progress-bar-container');
+const labelProgressBar = progressBarContainer.querySelector('#label-progress-bar');
+const hideButton = welcomePageContainer.querySelector('#hide-welcome-page-btn');
+
+welcomePageContainer.addEventListener("click", function (event) {
+    event.stopPropagation(); // Ngăn chặn sự kiện click lan rộng đến document
+});
+
+// Create a loading page for threeJS app
+const loadingManager = new THREE.LoadingManager()
+
+loadingManager.onStart = (url, item, total) => {
+	labelProgressBar.innerHTML = 'Start Loading...';
+}
+
+loadingManager.onProgress = function(url, loaded, total) {
+	let loadedValue = ((loaded / total) * 100).toFixed(2);
+	labelProgressBar.innerHTML = `Loading... ${loadedValue}%`
+	progressBar.value = loadedValue;
+}
+
+loadingManager.onLoad = function() {
+	progressBarContainer.style.display = 'none';
+	hideButton.style.display = 'block';
+}
+
+hideButton.addEventListener('click', () => {
+	welcomePageContainer.style.display = 'none';
+})
+
+////// END WELCOME PAGE
+
 function init() {
+
     // Initialize a scene
     scene = new THREE.Scene();
     // Initialize a GUI
@@ -110,67 +146,10 @@ function init() {
     const Orca = createOrca();
     fishTank.add(Orca);
 
-    // Đọc thông tin từ tệp JSON
-    fetch("orca.json")
-        .then((response) => response.json())
-        .then((data) => {
-          addEventListener("click", function (event) {
-            var mouse = new THREE.Vector2();
-            var raycaster = new THREE.Raycaster();
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            // Lấy tên của vật thể được click
-            var intersects = raycaster.intersectObject(Orca);
-            if (intersects.length > 0) {
-            // Kiểm tra xem vật thể được chọn có trong tệp JSON không
-            const objectInfo = data.find((info) => info.name === "Orca");
-            if (objectInfo) {
-                showInfoPanel(
-                  objectInfo.name,
-                  objectInfo.location,
-                  objectInfo.lifespan,
-                  Orca
-                );
-              }
-            }
-          });
-        })
-    .catch((error) => console.error("No info", error));
-
-	
 	//Thêm Turtle
   	const Turtle = createTurtle();
   	fishTank.add(Turtle);
-    
-	// Đọc thông tin từ tệp JSON
-  	fetch("turtle.json")
-  	.then((response) => response.json())
-  	.then((data) => {
-		addEventListener("click", function (event) {
-	  	var mouse = new THREE.Vector2();
-	  	var raycaster = new THREE.Raycaster();
-	  	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-	  	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-	  	raycaster.setFromCamera(mouse, camera);
-	  	// Lấy tên của vật thể được click
-	  	var intersects = raycaster.intersectObject(Turtle);
-	  	if (intersects.length > 0) {
-			// Kiểm tra xem vật thể được chọn có trong tệp JSON không
-			const objectInfo = data.find((info) => info.name === "Turtle");
-			if (objectInfo) {
-		  		showInfoPanel(
-                objectInfo.name,
-                objectInfo.location,
-                objectInfo.lifespan,
-                Turtle
-              );
-            }
-          }
-        });
-      })
-  	.catch((error) => console.error("No info", error));
-    
+
     // END CODE
     scene.add(fishTank);
 
@@ -244,10 +223,10 @@ function createBlueWhale(controls, controls2) {
     let mesh;
 
     // Load model
-    const loader = new GLTFLoader().setPath('public/blue_whale/');
+    const loader = new GLTFLoader(loadingManager).setPath('public/blue_whale/');
 
     loader.load('scene.gltf', (gltf) => {
-        console.log('Đang tải model');
+        console.log('Đang tải model BlueWhale');
         mesh = gltf.scene;
         mesh.scale.set(0.85, 0.85, 0.85);
 
@@ -303,6 +282,8 @@ function createBlueWhale(controls, controls2) {
         }
         renderer.setAnimationLoop(animate)
     });
+    
+	console.log("Đã tải model BlueWhale");
 
     return BlueWhale;
 }
@@ -311,7 +292,10 @@ function createRyukinGoldfish() {
     const Ryukin = new THREE.Group();
     let mixer;
     let object;
-    const loader = new GLTFLoader();
+
+	console.log('Đang tải model RyukinGoldfish');
+
+    const loader = new GLTFLoader(loadingManager);
     loader.load(
         `public/ryukin_goldfish/scene.gltf`,
         function (gltf) {
@@ -369,7 +353,10 @@ function createRyukinGoldfish() {
             console.error(error);
         }
     );
-  return Ryukin;
+  
+	console.log("Đã tải model Ryukin");
+
+	return Ryukin;
 }
 
 function createSpottedJellyfish() {
@@ -377,8 +364,10 @@ function createSpottedJellyfish() {
 
     let mixer;
     let object;
-
-    const loader = new GLTFLoader();
+	
+	
+	console.log('Đang tải model SpottedJellyfish');
+    const loader = new GLTFLoader(loadingManager);
     loader.load(
         `public/simple_spotted_jellyfish_baked_animation/scene.gltf`,
         function (gltf) {
@@ -407,6 +396,8 @@ function createSpottedJellyfish() {
         }
     );
 
+	console.log("Đã tải model SpottedJellyfish");
+
     return SpottedJellyfish;
 }
 
@@ -417,10 +408,10 @@ function createCrab() {
     let mesh;
 
     // Load model
-    const loader = new GLTFLoader().setPath('public/animated_crab/');
+    const loader = new GLTFLoader(loadingManager).setPath('public/animated_crab/');
 
     loader.load('scene.gltf', (gltf) => {
-        console.log('Đang tải model');
+        console.log('Đang tải model Crab');
         mesh = gltf.scene;
         mesh.scale.set(3.5, 3.5, 3.5);
         mesh.rotation.x = Math.PI/8;
@@ -471,8 +462,10 @@ function createCrab() {
 function createOrca() {
   let fish;
   let mixer;
+  console.log('Đang tải model Orca');
+
   const Orca = new THREE.Group()
-  const loader = new GLTFLoader()
+  const loader = new GLTFLoader(loadingManager)
   loader.load('public/female_orca/scene.gltf', function (gltf) {
       fish = gltf.scene
       mixer = new THREE.AnimationMixer(fish);
@@ -521,14 +514,17 @@ function createOrca() {
       animate()
     }
   )
+  console.log("Đã tải model Orca");
+
   return Orca
 }
 
 function createTurtle() {
   let fish;
   let mixer;
+  console.log('Đang tải model Turtle');
   const Turtle = new THREE.Group()
-  const loader = new GLTFLoader()
+  const loader = new GLTFLoader(loadingManager)
   loader.load('public/sea_turtle/scene.gltf', function (gltf) {
       fish = gltf.scene
       fish.scale.set(2, 2, 2);
@@ -582,6 +578,7 @@ function createTurtle() {
       animate()
     }
   )
+  console.log("Đã tải model Turtle");
   return Turtle
 }
 
@@ -660,7 +657,7 @@ function setupSpotLightControls(spotLight, parentFolder = None) {
 function createRoom(width, length, height, thickness, texturePath='') {
     const room = new THREE.Group();
     let defaultColor = 'rgb(199, 199, 255)';
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = new THREE.TextureLoader(loadingManager);
 
     // Wall material
     let wallMaterial;
@@ -729,8 +726,9 @@ function createRoom(width, length, height, thickness, texturePath='') {
 function createFishTank(tankWidth=170, tankHeight=200, tankDepth=200) {
     const fishTank = new THREE.Group();
 
+	console.log('Đang tải model FishTank')
     // Load fish tank model
-    const loader = new GLTFLoader().setPath("./public/");
+    const loader = new GLTFLoader(loadingManager).setPath("./public/");
     loader.load("/cage/glass_cage.glb", function (gltf) {
         const fishTankModel = gltf.scene;
         fishTankModel.name = "fish-tank";
@@ -746,6 +744,8 @@ function createFishTank(tankWidth=170, tankHeight=200, tankDepth=200) {
                 child.receiveShadow = true;
             }
         });
+
+		console.log("Đã tải model FishTank");
 
         const glass = fishTankModel.getObjectByName("Cube_2");
         glass.name = "tank-glass";
@@ -838,7 +838,8 @@ function createWater(scale=1.0) {
 
 function createCorals(numberOfCorals = 35, scale = .003) {
     const corals = new THREE.Group();
-
+    corals.name = 'corals';
+	console.log('Đang tải model Corals')
     // Helper function to change coral color
     function changeCoralColor(coralModel, color) {
         coralModel.traverse((child) => {
@@ -848,7 +849,7 @@ function createCorals(numberOfCorals = 35, scale = .003) {
         });
     }
 
-    const loader = new GLTFLoader().setPath("./public/");
+    const loader = new GLTFLoader(loadingManager).setPath("./public/");
     const coralModels = [
         "/corals/Coral0.glb",
         "/corals/Coral1.glb",
@@ -944,27 +945,27 @@ function createCorals(numberOfCorals = 35, scale = .003) {
         const coralPath = coralModels[randomCoralIndex];
 
         loader.load(coralPath, function (gltf) {
-        const coralModel = gltf.scene;
-        coralModel.scale.set(scale, scale, scale);
+			const coralModel = gltf.scene;
+			coralModel.scale.set(scale, scale, scale);
 
-            // Generate random position within a range
-            const posX = THREE.MathUtils.randFloat(-0.4, 0.4); // Adjust range as needed
-            const posY = -0.4;
-            const posZ = THREE.MathUtils.randFloat(-.42, .42); // Adjust range as needed
-            coralModel.position.set(posX, posY, posZ);
-            coralModel.rotation.y = THREE.MathUtils.randFloat(-Math.PI, Math.PI);
+				// Generate random position within a range
+				const posX = THREE.MathUtils.randFloat(-0.4, 0.4); // Adjust range as needed
+				const posY = -0.4;
+				const posZ = THREE.MathUtils.randFloat(-.42, .42); // Adjust range as needed
+				coralModel.position.set(posX, posY, posZ);
+				coralModel.rotation.y = THREE.MathUtils.randFloat(-Math.PI, Math.PI);
 
-        // Change coral color if needed
-        const randomColor = Math.random() * 0xffffff;
-        changeCoralColor(coralModel, randomColor);
+			// Change coral color if needed
+			const randomColor = Math.random() * 0xffffff;
+			changeCoralColor(coralModel, randomColor);
 
-        corals.add(coralModel);
+			corals.add(coralModel);
 
-        // Check if all corals have been loaded
-        if (corals.children.length === numberOfCorals) {
-            // All corals are loaded
-            console.log("All corals loaded:", corals);
-        }
+			// Check if all corals have been loaded
+			if (corals.children.length === numberOfCorals) {
+				// All corals are loaded
+				console.log("Đã tải model Corals");
+			}
         });
     }
 
@@ -975,7 +976,7 @@ function createTable(tableWidth=50, tableLength=50, tableThickness=2, legWidth=2
     const table = new THREE.Group();
 
     // Table top
-    const texture = new THREE.TextureLoader().load('public/textures/wooden.jpg'); 
+    const texture = new THREE.TextureLoader(loadingManager).load('public/textures/wooden.jpg'); 
     const material = new THREE.MeshStandardMaterial({
         map: texture, // Use the texture for color
         side: THREE.DoubleSide, // Ensure texture is visible on both sides of the wall
@@ -1162,7 +1163,8 @@ function showInfoPanel(x, y, z, object) {
         "Tuổi thọ trung bình: " +
         z;
     document.body.appendChild(infoPanel);
-    // Hide the info panel after 5 seconds
+
+    // Hide the info panel after 10 seconds
     setTimeout(() => {
         document.body.removeChild(infoPanel);
     }, 10000);

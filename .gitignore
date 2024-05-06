@@ -2,3 +2,4 @@ node_modules/
 try.js
 models/
 .vscode/
+main_*
