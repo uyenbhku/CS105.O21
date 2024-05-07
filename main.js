@@ -71,7 +71,7 @@ function init() {
 			// REVIEW: ông Giáp đang thắc mắc là với mỗi con sinh vật thì ông sẽ dùng lại đoạn 
 			// code này phải không? Nếu đúng vậy thì ổng đề tổng quát hóa cái này, chỉ có 1 chỗ duy nhất 
 			// để xử lý chung cho các con vật để code gọn hơn
-			// Tui có thêm tên của con vật bằng tên của tụi nó, vd ông có thể xem 
+            // Tui có thêm tên của con vật bằng tên của tụi nó, vd ông có thể xem 
 			// tên của con BlueWhale bằng BlueWhale.name
 			// Bên cạnh đó, tui nghĩ file JSON hiện tại gồm 3 keys như vậy thì cũng ok
 			// nhưng mà tui nghĩ ông nên để ý 1 cái là name và display name
@@ -1154,10 +1154,10 @@ function showInfoPanel(x, y, z, t ,object) {
 	// Hơn nữa, tại sao lại phải remove nó sau 10s? Việc này sẽ mang lại trải nghiệm tốt hơn?
 	// Rồi giả sử người dùng người ta muốn xem lâu hơn thì sao? Ông đã handle trường hợp này 
 	// chưa?
-    setTimeout(() => {
-		console.log('remove timeout')
-        document.body.removeChild(infoPanel);
-    }, 10000);
+    // setTimeout(() => {
+	// 	console.log('remove timeout')
+    //     document.body.removeChild(infoPanel);
+    // }, 10000);
 
     // Hide the info panel when the user clicks anywhere on the screen
 	// REVIEW: khúc này thì tui hiểu ý ông nè, nhưng mà tui nghĩ là anywhere thì hơi kỳ,
@@ -1172,9 +1172,9 @@ function showInfoPanel(x, y, z, t ,object) {
 	// REVIEW: tại sao lại có thêm cái này? Ông gọi cái này từ cái event listener click
 	// trong cái fetch ở tuốt trên kia rồi, vậy mục đích mấy dòng này là gì?
     // show the info panel when the object is clicked
-    document.addEventListener("click", function () {
-        showInfoPanel();
-    });
+    // document.addEventListener("click", function () {
+    //     showInfoPanel();
+    // });
 }
 
 
