@@ -210,7 +210,7 @@ function init() {
     // render
     document.body.appendChild(renderer.domElement);
     // dynamic update
-    update(renderer, scene, camera, controls);
+    update();
     // responsive
     window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -1126,15 +1126,13 @@ function setupControls() {
     return controls;
 }
 
-function update(renderer, scene, camera, controls) {
+function update() {
     // Render the scene
     renderer.render(scene, camera);
 
     controls.update();
     // handle the render of the scene
-    requestAnimationFrame(function () {
-        update(renderer, scene, camera, controls);
-    });
+    requestAnimationFrame(update);
 }
 
 function showInfoPanel(x, y, z, object) {
