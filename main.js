@@ -102,7 +102,7 @@ function init() {
 					// REVIEW: nếu ông vô hàm này xem review rồi thì ông sẽ thấy tui bảo
 					// là một event listener trong đó có vẻ không cần thiết. Lý do 
 					// là vì chính chỗ này đã là cái trigger cho cái event đó rồi nè
-					showInfoPanel(objectInfo.name, objectInfo.location, objectInfo.lifespan, BlueWhale);
+					showInfoPanel(objectInfo.name,objectInfo.displayName, objectInfo.location, objectInfo.lifespan, BlueWhale);
 				}
 			}
 		});
@@ -1113,7 +1113,7 @@ function update(renderer, scene, camera, controls) {
     });
 }
 
-function showInfoPanel(x, y, z, object) {
+function showInfoPanel(x, y, z, t ,object) {
     var infoPanel = document.createElement("div");
     infoPanel.style.position = "absolute";
     // Lấy vị trí thế giới của vật thể
@@ -1135,13 +1135,13 @@ function showInfoPanel(x, y, z, object) {
     infoPanel.textContent =
         "Thông tin sinh vật: \n" +
         "Tên: " +
-        x +
-        "\n" +
-        "Nơi sống: " +
         y +
         "\n" +
+        "Nơi sống: " +
+        z +
+        "\n" +
         "Tuổi thọ trung bình: " +
-        z;
+        t;
     document.body.appendChild(infoPanel);
 
     // Hide the info panel after 10 seconds
