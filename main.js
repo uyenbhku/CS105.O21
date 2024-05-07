@@ -61,7 +61,7 @@ function init() {
     const controls2 = setupControls();
 
     // ROOM
-    var room = createRoom(900, 400, 300, 4,);
+    var room = createRoom(500, 400, 300, 4,);
     scene.add(room)
 
     // Light fixture geometry
@@ -760,28 +760,6 @@ function createFishTank(tankWidth=170, tankHeight=200, tankDepth=200) {
         water.add(waterSurface);
         glass.add(water);
 
-        const count = waterSurface.geometry.attributes.position.count;
-        const damping = 0.25;
-
-        function animate() {
-            const now_slow = Date.now() / 400;
-            for (let i = 0; i < count; i++) {
-                const x = waterSurface.geometry.attributes.position.getX(i);
-                const y = waterSurface.geometry.attributes.position.getY(i);
-                
-                const xangle = x + now_slow;
-                const xsin = Math.sin(xangle) * damping;
-                
-                const yangle = y + now_slow;
-                const ycos = Math.cos(yangle) * damping;
-                waterSurface.geometry.attributes.position.setZ(i, xsin + ycos);
-            }
-            waterSurface.geometry.computeVertexNormals();
-            waterSurface.geometry.attributes.position.needsUpdate = true;
-            requestAnimationFrame(animate);
-        }
-
-        animate();
         fishTank.add(fishTankModel);
     });
 
@@ -804,7 +782,35 @@ function createWaterSurface(width=30, height=30, scale=.06) {
     waterSurface.castShadow = true;
     waterSurface.rotation.x = -Math.PI / 2;
     waterSurface.scale.set(scale, scale, scale);
+    waterSurface.matrixAutoUpdate = true;
+    
+    const positionAttribute = waterSurface.geometry.getAttribute( 'position' );
+    
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        const damping = 0.25;
+        const now_slow = Date.now() / 400;
+        const count = positionAttribute.count;
+        positionAttribute.needsUpdate = true; 
 
+        // tạo sóng
+        for (let i = 0; i < count; i++) {
+
+            const x = positionAttribute.getX(i);
+            const y = positionAttribute.getY(i);
+            
+            const xangle = x + now_slow;
+            const xsin = Math.sin(xangle) * damping;
+            
+            const yangle = y + now_slow;
+            const ycos = Math.cos(yangle) * damping;
+            positionAttribute.setZ(i, xsin + ycos);
+        }
+    }
+
+    renderer.setAnimationLoop(animate)
+    
     return waterSurface;
 }
 
@@ -974,7 +980,7 @@ function createTable(tableWidth=50, tableLength=50, tableThickness=2, legWidth=2
 
     // Table top
     const texture = textureLoader.load('textures/wooden.jpg'); 
-    const material = new THREE.MeshStandardMaterial({
+    const material = new THREE.MeshPhysicalMaterial({
         map: texture, // Use the texture for color
         side: THREE.DoubleSide, // Ensure texture is visible on both sides of the wall
     });
@@ -1103,7 +1109,7 @@ function setupRenderer() {
 
 function setupCamera() {
     camera = new THREE.PerspectiveCamera(
-        45,
+        75,
         window.innerWidth / window.innerHeight,
         0.1,
         1000
