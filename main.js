@@ -1144,37 +1144,12 @@ function showInfoPanel(x, y, z, t ,object) {
         t;
     document.body.appendChild(infoPanel);
 
-    // Hide the info panel after 10 seconds
-	// REVIEW: khúc này nên nằm ngoài hàm này, cái hàm này chỉ Show thui, ko có Hide
-
-	// Review Logic:
-	// Bây giờ logic chỗ này đá nhau nè, ông thấy là ông đã handle click ở ngoài rùi, 
-	// giờ ví dụ trong 10s đó ông đã hide nó đi bằng click, 
-	// vậy thì cái setTimeout này nó sẽ làm gì? Hay nó throw error?
-	// Hơn nữa, tại sao lại phải remove nó sau 10s? Việc này sẽ mang lại trải nghiệm tốt hơn?
-	// Rồi giả sử người dùng người ta muốn xem lâu hơn thì sao? Ông đã handle trường hợp này 
-	// chưa?
-    // setTimeout(() => {
-	// 	console.log('remove timeout')
-    //     document.body.removeChild(infoPanel);
-    // }, 10000);
-
-    // Hide the info panel when the user clicks anywhere on the screen
-	// REVIEW: khúc này thì tui hiểu ý ông nè, nhưng mà tui nghĩ là anywhere thì hơi kỳ,
-	// Hiện tại tui click vào ô infoPanel thì nó cũng biến mất á, mà theo trải nghiệm
-	// ở nhiều trang khác, tui thấy thường là tui click vào cái đó để giữ lại hoặc xem lâu hơn 
-	// đề xuất: hide the info panel when the user clicks anywhere OUTSIDE infoPanel
-    document.addEventListener("click", function () {
-		console.log('remove click outside')
-		document.body.removeChild(infoPanel);
+	// hide the info panel when the user clicks anywhere OUTSIDE infoPanel
+    document.addEventListener("click", function (event) {
+        if (event.target !== infoPanel) {
+            document.body.removeChild(infoPanel);
+        }
     });
-
-	// REVIEW: tại sao lại có thêm cái này? Ông gọi cái này từ cái event listener click
-	// trong cái fetch ở tuốt trên kia rồi, vậy mục đích mấy dòng này là gì?
-    // show the info panel when the object is clicked
-    // document.addEventListener("click", function () {
-    //     showInfoPanel();
-    // });
 }
 
 
