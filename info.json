@@ -1,7 +1,42 @@
 [
     {
         "name": "BlueWhale",
+        "displayName": "Cá voi xanh",
         "location": "Ấn Độ Dương, Thái Bình Dương",
         "lifespan": "80-90 năm"
-    }    
+    },
+    {
+        "name": "Crab",
+        "displayName": "Cua biển",
+        "location": "Mọi đại dương",
+        "lifespan": "2-4 năm"
+    },
+
+    {
+        "name": "RyukinGoldFish",
+        "displayName": "Cá vàng Ryukin",
+        "location": "Trung Quốc",
+        "lifespan": "10-15 năm"
+    },
+
+    {
+        "name": "SpottedJellyfish",
+        "displayName": "Sứa đốm",
+        "location": "Ấn Độ Dương, Thái Bình Dương",
+        "lifespan": "vài tháng-1 năm"
+    },
+
+    {
+        "name": "Turtle",
+        "displayName": "Rùa biển",
+        "location": "Hầu hết đại dương trên thế giới trừ vùng Bắc Cực",
+        "lifespan": "70-80 năm"
+    },
+
+    {
+        "name": "Orca",
+        "displayName": "Cá voi sát thủ",
+        "location": "Vùng biển đông bắc Đại Tây Dương xung quanh bờ biển Na Uy, ở phía bắc Thái Bình Dương dọc theo quần đảo Aleut, Vịnh Alaska và ở vùng Nam Đại Dương nằm ở xa Châu Nam Cực",
+        "lifespan": "80-90 năm"
+    } 
 ]
