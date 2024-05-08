@@ -185,7 +185,7 @@ function init() {
     myLamp.position.x -= 17;
     table.add(myLamp);
     // see direction of directional light
-    scene.add(new THREE.CameraHelper(directionalLight.shadow.camera)) 
+    // scene.add(new THREE.CameraHelper(directionalLight.shadow.camera)) 
     directionalLight.shadowCameraVisible = true;
     
     // SETUP GUI 
