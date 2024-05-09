@@ -63,18 +63,6 @@ function init() {
     BlueWhale.name = 'BlueWhale';
     fishTank.add(BlueWhale);
 
-    fetch('info.json')
-        .then(response => response.json())
-        .then(data => {
-            addEventListener('click', handleObjectClick(BlueWhale, camera, data));
-            // Thêm các sự kiện cho các vật thể khác ở đây nếu cần
-        })
-        .catch(error => console.error('No info', error));
-
-    // END CODE
-    scene.add(fishTank);
-
-
     // Thêm cá vàng Ryukin
     const RyukinGoldfish = createRyukinGoldfish();
     RyukinGoldfish.name = 'RyukinGoldFish';
@@ -84,13 +72,6 @@ function init() {
     RyukinGoldfish.position.z -= 100;
     fishTank.add(RyukinGoldfish);
 
-    fetch('info.json')
-        .then(response => response.json())
-        .then(data => {
-            addEventListener('click', handleObjectClick(RyukinGoldfish, camera, data));
-            // Thêm các sự kiện cho các vật thể khác ở đây nếu cần
-        })
-        .catch(error => console.error('No info', error));
 
     // END CODE
     scene.add(fishTank);
@@ -104,13 +85,6 @@ function init() {
     SpottedJellyfish.position.z -= 100;
     fishTank.add(SpottedJellyfish);
 
-    fetch('info.json')
-        .then(response => response.json())
-        .then(data => {
-            addEventListener('click', handleObjectClick(SpottedJellyfish, camera, data));
-            // Thêm các sự kiện cho các vật thể khác ở đây nếu cần
-        })
-        .catch(error => console.error('No info', error));
 
     //Thêm cua
     const Crab = createCrab();
@@ -121,39 +95,24 @@ function init() {
     Crab.position.z -= 100;
     fishTank.add(Crab);
 
-    fetch('info.json')
-        .then(response => response.json())
-        .then(data => {
-            addEventListener('click', handleObjectClick(Crab, camera, data));
-            // Thêm các sự kiện cho các vật thể khác ở đây nếu cần
-        })
-        .catch(error => console.error('No info', error));
-
     //Thêm Orca
     const Orca = createOrca();
     Orca.name = 'Orca';
     fishTank.add(Orca);
 
-    fetch('info.json')
-        .then(response => response.json())
-        .then(data => {
-            addEventListener('click', handleObjectClick(Orca, camera, data));
-            // Thêm các sự kiện cho các vật thể khác ở đây nếu cần
-        })
-        .catch(error => console.error('No info', error));
 
     //Thêm Turtle
     const Turtle = createTurtle();
     Turtle.name = 'Turtle';
     fishTank.add(Turtle);
 
-    fetch('info.json')
-        .then(response => response.json())
-        .then(data => {
-            addEventListener('click', handleObjectClick(Turtle, camera, data));
-            // Thêm các sự kiện cho các vật thể khác ở đây nếu cần
-        })
-        .catch(error => console.error('No info', error));
+    handleAnimalClick(BlueWhale, 'BlueWhale');
+    handleAnimalClick(Crab, 'Crab');
+    handleAnimalClick(Orca, 'Orca');
+    handleAnimalClick(Turtle, 'Turtle');
+    handleAnimalClick(SpottedJellyfish, 'SpottedJellyfish');
+    handleAnimalClick(RyukinGoldfish, 'RyukinGoldFish');
+
 
     // TABLE
     const table = createTable();
@@ -1157,31 +1116,27 @@ function showInfoPanel(x, y, z, t, object) {
 }
 
 
-function handleObjectClick(object, camera, jsonData) {
-    // Tạo một dictionary để lưu trữ thông tin vật thể theo tên
-    const objectInfoDict = {};
-    jsonData.forEach(info => {
-        objectInfoDict[info.name] = info;
-    });
+function handleAnimalClick(animal, animalName) {
+    fetch('info.json')
+        .then(response => response.json())
+        .then(data => {
+            addEventListener('click', function (event) {
+                var mouse = new THREE.Vector2();
+                var raycaster = new THREE.Raycaster();
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
 
-    return function (event) {
-        var mouse = new THREE.Vector2();
-        var raycaster = new THREE.Raycaster();
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera(mouse, camera);
-
-        // Lấy tên của vật thể được click
-        var intersects = raycaster.intersectObject(object);
-        if (intersects.length > 0) {
-            const objectName = object.name;
-            // Tìm thông tin vật thể trong dictionary
-            const objectInfo = objectInfoDict[objectName];
-            if (objectInfo) {
-                showInfoPanel(objectInfo.name, objectInfo.displayName, objectInfo.location, objectInfo.lifespan, object);
-            }
-        }
-    };
+                var intersects = raycaster.intersectObject(animal);
+                if (intersects.length > 0) {
+                    const objectInfo = data.find(info => info.name === animalName);
+                    if (objectInfo) {
+                        showInfoPanel(objectInfo.name, objectInfo.displayName, objectInfo.location, objectInfo.lifespan, animal);
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('No info', error));
 }
 
 
