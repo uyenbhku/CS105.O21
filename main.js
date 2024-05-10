@@ -1076,12 +1076,21 @@ function update(renderer, scene, camera, controls) {
     });
 }
 
+
+var infoPanel = document.createElement("div");
+infoPanel.style.position = "absolute";
+infoPanel.style.background = "rgba(255,255,255,0.8)";
+infoPanel.style.padding = "10px";
+infoPanel.style.whiteSpace = "pre-line";
+document.body.appendChild(infoPanel);
+// không cho click trên infoPanel ảnh hưởng tới body
+infoPanel.addEventListener('Click', e => {
+    e.stopPropagation();
+})
+
 function showInfoPanel(x, y, z, t, object) {
-    var infoPanel = document.createElement("div");
-    infoPanel.style.position = "absolute";
     // Lấy vị trí thế giới của vật thể
     var objectWorldPosition = new THREE.Vector3();
-    console.log(object)
     object.getWorldPosition(objectWorldPosition);
 
     // Chuyển đổi vị trí thế giới thành vị trí màn hình
@@ -1090,11 +1099,8 @@ function showInfoPanel(x, y, z, t, object) {
     vector.y = (-(vector.y - 1) / 2) * window.innerHeight;
 
     infoPanel.style.top = vector.y + "px";
-    infoPanel.style.left = vector.x + "px";
+    infoPanel.style.left = vector.x + "px"; 
 
-    infoPanel.style.background = "rgba(255,255,255,0.8)";
-    infoPanel.style.padding = "10px";
-    infoPanel.style.whiteSpace = "pre-line";
     infoPanel.textContent =
         "Thông tin sinh vật: \n" +
         "Tên: " +
@@ -1105,39 +1111,48 @@ function showInfoPanel(x, y, z, t, object) {
         "\n" +
         "Tuổi thọ trung bình: " +
         t;
-    document.body.appendChild(infoPanel);
 
+    if (infoPanel.style.display !== 'block') {
+        infoPanel.style.display = "block";
+    }
+    
     // hide the info panel when the user clicks anywhere OUTSIDE infoPanel
     document.addEventListener("click", function (event) {
-        if (event.target !== infoPanel) {
-            document.body.removeChild(infoPanel);
+        if (event.target !== infoPanel && 
+            infoPanel.style.display !== "none") {
+            infoPanel.style.display = "none";
+        } 
+    });
+}
+
+const objectInfoDict = {};
+fetch('info.json')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(info => {
+                objectInfoDict[info.name] = info;
+            });
+        })
+        .catch(error => console.error('No info', error));
+
+function handleAnimalClick(animal, animalName) {
+    addEventListener('click', function (event) {
+        var mouse = new THREE.Vector2();
+        var raycaster = new THREE.Raycaster();
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        var intersects = raycaster.intersectObject(animal);
+        if (intersects.length > 0) {
+            const objectInfo = objectInfoDict[animalName];
+            if (objectInfo) {
+                showInfoPanel(objectInfo.name, objectInfo.displayName, objectInfo.location, objectInfo.lifespan, animal);
+            }
         }
     });
 }
 
-
-function handleAnimalClick(animal, animalName) {
-    fetch('info.json')
-        .then(response => response.json())
-        .then(data => {
-            addEventListener('click', function (event) {
-                var mouse = new THREE.Vector2();
-                var raycaster = new THREE.Raycaster();
-                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                raycaster.setFromCamera(mouse, camera);
-
-                var intersects = raycaster.intersectObject(animal);
-                if (intersects.length > 0) {
-                    const objectInfo = data.find(info => info.name === animalName);
-                    if (objectInfo) {
-                        showInfoPanel(objectInfo.name, objectInfo.displayName, objectInfo.location, objectInfo.lifespan, animal);
-                    }
-                }
-            });
-        })
-        .catch(error => console.error('No info', error));
-}
 
 
 init();
