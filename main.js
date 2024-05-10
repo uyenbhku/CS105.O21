@@ -86,13 +86,6 @@ function init() {
     fishTank.position.z += 50;
     fishTank.name = 'fishTank'
 
-    // !!! CODE HERE
-    // Add Objects to the scene
-    // Con cá trong bể bơi thì thêm vào fishTank
-    // const fishName = createFishName();
-    // fishTank.add(fishName);
-
-    // đồ ngoại cảnh thì thêm vào scene
     // Thêm blue whale vào hồ
     const BlueWhale = createBlueWhale(controls, controls2);
     BlueWhale.scale.set(0.06, 0.06, 0.06);
@@ -110,11 +103,7 @@ function init() {
     RyukinGoldfish.position.x += 40;
     RyukinGoldfish.position.z -= 100;
     fishTank.add(RyukinGoldfish);
-
-
-    // END CODE
-    scene.add(fishTank);
-
+    
     // Thêm sứa
     const SpottedJellyfish = createSpottedJellyfish();
     SpottedJellyfish.name = 'SpottedJellyfish';
@@ -123,8 +112,7 @@ function init() {
     SpottedJellyfish.position.x -= 60;
     SpottedJellyfish.position.z -= 100;
     fishTank.add(SpottedJellyfish);
-
-
+    
     //Thêm cua
     const Crab = createCrab();
     Crab.name = 'Crab';
@@ -133,18 +121,18 @@ function init() {
     Crab.position.y = -25;
     Crab.position.z -= 100;
     fishTank.add(Crab);
-
+    
     //Thêm Orca
     const Orca = createOrca();
     Orca.name = 'Orca';
     fishTank.add(Orca);
-
+    
 
     //Thêm Turtle
     const Turtle = createTurtle();
     Turtle.name = 'Turtle';
     fishTank.add(Turtle);
-
+    
     handleAnimalClick(BlueWhale, 'BlueWhale');
     handleAnimalClick(Crab, 'Crab');
     handleAnimalClick(Orca, 'Orca');
@@ -152,6 +140,8 @@ function init() {
     handleAnimalClick(SpottedJellyfish, 'SpottedJellyfish');
     handleAnimalClick(RyukinGoldfish, 'RyukinGoldFish');
 
+    // END CODE
+    scene.add(fishTank);
 
     // TABLE
     const table = createTable();
@@ -214,19 +204,15 @@ function init() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    console.log(scene);
     return scene;
 }
 
 function createBlueWhale(controls, controls2) {
     const BlueWhale = new THREE.Group();
-
     let mixer;
     let mesh;
-
     // Load model
     loader.load('blue_whale/scene.gltf', (gltf) => {
-        console.log('Đang tải model BlueWhale');
         mesh = gltf.scene;
         mesh.scale.set(0.85, 0.85, 0.85);
 
@@ -235,56 +221,42 @@ function createBlueWhale(controls, controls2) {
         gltf.animations.forEach((animation) => {
             mixer.clipAction(animation).play();
         });
-
         // Thêm mesh vào nhóm BlueWhale
         BlueWhale.add(mesh);
-		console.log("Đã tải model BlueWhale");
-
         const points = [
             new THREE.Vector3(-1000, 0, -15), // điểm bên trái ở ngoài
             new THREE.Vector3(-1000, 0, -1000), // điểm bên trái ở trong
             new THREE.Vector3(1000, 0, -500), // điểm bên phải ở trong
             new THREE.Vector3(1000, 0, -15), // điểm bên phải ở ngoài
         ];
-
         const path = new THREE.CatmullRomCurve3(points, true);
-
         function animate(time) {
             const target = controls.target;
             controls.update();
             controls2.target.set(target.x, target.y, target.z);
             controls2.update();
-
             if (mesh) {
                 const t = (time / 8000 % 6) / 6; // chỉnh speed 
                 const position = path.getPointAt(t);
                 mesh.position.copy(position);
-
                 // Tính toán vector hướng giữa các điểm trong mảng points
                 const index = Math.floor(t * (points.length - 1));
                 const direction = new THREE.Vector3().copy(points[index + 1]).sub(points[index]).normalize();
-
                 // Tính toán góc xoay của mesh dựa trên hướng vector và mềm dần góc quay
-                const targetRotationY = Math.atan2(-direction.z, direction.x) + Math.PI / 5; // Quay mesh 180 độ
+                const targetRotationY = Math.atan2(-direction.z, direction.x) + Math.PI/5; // Quay mesh 180 độ
                 const currentRotationY = mesh.rotation.y;
                 const rotationSpeed = 0.00008; // Tốc độ quay
-
                 // Mềm dần góc quay
                 mesh.rotation.y += rotationSpeed * (targetRotationY - currentRotationY);
             }
-
             requestAnimationFrame(animate);
-
             // // Update the animation mixer
             if (mixer) {
                 mixer.update(0.00006);
             }
-
         }
         renderer.setAnimationLoop(animate)
     });
-    
-
     return BlueWhale;
 }
 
@@ -293,9 +265,6 @@ function createRyukinGoldfish() {
     let mixer;
     let object;
 
-	console.log('Đang tải model RyukinGoldfish');
-
-  ;
     loader.load(
         `ryukin_goldfish/scene.gltf`,
         function (gltf) {
@@ -353,9 +322,6 @@ function createRyukinGoldfish() {
             console.error(error);
         }
     );
-  
-	console.log("Đã tải model Ryukin");
-
 	return Ryukin;
 }
 
@@ -364,10 +330,7 @@ function createSpottedJellyfish() {
 
     let mixer;
     let object;
-	
-	
-	console.log('Đang tải model SpottedJellyfish');
-  ;
+
     loader.load(
         `simple_spotted_jellyfish_baked_animation/scene.gltf`,
         function (gltf) {
@@ -396,86 +359,70 @@ function createSpottedJellyfish() {
         }
     );
 
-	console.log("Đã tải model SpottedJellyfish");
-
     return SpottedJellyfish;
 }
 
 function createCrab() {
     const Crab = new THREE.Group();
-
     let mixer;
     let mesh;
-
     // Load model
     loader.load('animated_crab/scene.gltf', (gltf) => {
-        console.log('Đang tải model Crab');
         mesh = gltf.scene;
         mesh.scale.set(3.5, 3.5, 3.5);
-        mesh.rotation.x = Math.PI / 8;
-
+        mesh.rotation.x = Math.PI/8;
         mixer = new THREE.AnimationMixer(mesh);
         // Associate animations with the mixer and play them
         gltf.animations.forEach((animation) => {
             mixer.clipAction(animation).play();
         });
-
         // Thêm mesh vào nhóm JellyFish
         Crab.add(mesh);
-        console.log('Đã tải model crab');
-
         let upward = true; // Biến để xác định hướng di chuyển
-
         function animate() {
             // Di chuyển mesh lên và xuống
             const amplitude = 25; // Biên độ di chuyển
             const speed = 0.08; // Tốc độ di chuyển
-
             if (upward) {
                 mesh.position.x += speed;
             } else {
                 mesh.position.x -= speed;
             }
-
             // Đảo hướng di chuyển khi mesh đạt biên độ di chuyển
             if (mesh.position.x >= amplitude || mesh.position.x <= -amplitude) {
                 upward = !upward;
             }
-
             requestAnimationFrame(animate);
-
             // // Update the animation mixer
             if (mixer) {
                 mixer.update(0.03);
             }
-
         }
         renderer.setAnimationLoop(animate)
     });
     Crab.rotation.x = -Math.PI / 4; // Rotate group by 30 degrees
-
+    
     return Crab;
 }
 
 function createOrca() {
-  let fish;
-  let mixer;
-  console.log('Đang tải model Orca');
+    let fish;
+    let mixer;
 
-  const Orca = new THREE.Group()
+    const Orca = new THREE.Group()
 
-  loader.load('female_orca/scene.gltf', function (gltf) {
-      fish = gltf.scene
-      mixer = new THREE.AnimationMixer(fish);
-      gltf.animations.forEach((animation) => {
-          mixer.clipAction(animation).play();
-      });
-      Orca.add(fish)
-      Orca.matrixAutoUpdate = false
-      const entityManager = new YUKA.EntityManager()
-      const time = new YUKA.Time()
-      const swim = new YUKA.Vehicle()
-      swim.setRenderComponent(Orca, sync)
+    loader.load('female_orca/scene.gltf', function (gltf) {
+        fish = gltf.scene
+        mixer = new THREE.AnimationMixer(fish);
+        gltf.animations.forEach((animation) => {
+            mixer.clipAction(animation).play();
+        });
+        Orca.add(fish)
+        Orca.matrixAutoUpdate = false
+        const entityManager = new YUKA.EntityManager()
+        const time = new YUKA.Time()
+        const swim = new YUKA.Vehicle()
+        swim.setRenderComponent(Orca, sync)
 
         const path = new YUKA.Path()
         const x = -60;
@@ -510,30 +457,27 @@ function createOrca() {
             renderComponent.matrix.copy(entity.worldMatrix)
         }
         animate()
-    }
-  )
-  console.log("Đã tải model Orca");
-
-  return Orca
+    } )
+    
+    return Orca
 }
 
 function createTurtle() {
-  let fish;
-  let mixer;
-  console.log('Đang tải model Turtle');
-  const Turtle = new THREE.Group()
+    let fish;
+    let mixer;
 
-  loader.load('sea_turtle/scene.gltf', function (gltf) {
-      fish = gltf.scene
-      fish.scale.set(2, 2, 2);
-      mixer = new THREE.AnimationMixer(fish);
-      gltf.animations.forEach((animation) => {
-          mixer.clipAction(animation).play();
-      });
-      Turtle.add(fish)
+    const Turtle = new THREE.Group()
+
+    loader.load('sea_turtle/scene.gltf', function (gltf) {
+        fish = gltf.scene
+        fish.scale.set(2, 2, 2);
+        mixer = new THREE.AnimationMixer(fish);
+        gltf.animations.forEach((animation) => {
+            mixer.clipAction(animation).play();
+        });
+        Turtle.add(fish)
 
         Turtle.matrixAutoUpdate = false
-        scene.add(Turtle)
 
         const entityManager = new YUKA.EntityManager()
         const time = new YUKA.Time()
@@ -543,17 +487,17 @@ function createTurtle() {
 
         const path = new YUKA.Path()
         const x = 80;
-        const y = -100;
-        const z = -100
+        const y = 10;
+        const z = -170;
         path.loop = true
-        path.add(new YUKA.Vector3(0 + x, 2 + z, 8 + y))
-        path.add(new YUKA.Vector3(-2 + x, -2 + z, 4 + y))
-        path.add(new YUKA.Vector3(0 + x, 2 + z, 0 + y))
-        path.add(new YUKA.Vector3(4 + x, 0 + z, 4 + y))
-        path.add(new YUKA.Vector3(8 + x, -2 + z, 0 + y))
-        path.add(new YUKA.Vector3(10 + x, 2 + z, 4 + y))
-        path.add(new YUKA.Vector3(8 + x, 0 + z, 8 + y))
-        path.add(new YUKA.Vector3(4 + x, 0 + z, 10 + y))
+        path.add(new YUKA.Vector3(0 + x, 2 + y, 8 + z))
+        path.add(new YUKA.Vector3(-2 + x, -2 + y, 4 + z))
+        path.add(new YUKA.Vector3(0 + x, 2 + y, 0 + z))
+        path.add(new YUKA.Vector3(4 + x, 0 + y, 4 + z))
+        path.add(new YUKA.Vector3(8 + x, -2 + y, 0 + z))
+        path.add(new YUKA.Vector3(10 + x, 2 + y, 4 + z))
+        path.add(new YUKA.Vector3(8 + x, 0 + y, 8 + z))
+        path.add(new YUKA.Vector3(4 + x, 0 + y, 10 + z))
 
         dive.position.copy(path.current())
 
@@ -574,10 +518,8 @@ function createTurtle() {
             renderComponent.matrix.copy(entity.worldMatrix)
         }
         animate()
-    }
-  )
-  console.log("Đã tải model Turtle");
-  return Turtle
+    })
+    return Turtle
 }
 
 function setupDirectionalLightControls(directionalLight, parentFolder = None) {
@@ -722,8 +664,6 @@ function createRoom(width, length, height, thickness, texturePath = '') {
 
 function createFishTank(tankWidth = 170, tankHeight = 200, tankDepth = 200) {
     const fishTank = new THREE.Group();
-
-	console.log('Đang tải model FishTank')
     // Load fish tank model
     loader.load("/cage/glass_cage.glb", function (gltf) {
         const fishTankModel = gltf.scene;
@@ -740,8 +680,6 @@ function createFishTank(tankWidth = 170, tankHeight = 200, tankDepth = 200) {
                 child.receiveShadow = true;
             }
         });
-
-		console.log("Đã tải model FishTank");
 
         const glass = fishTankModel.getObjectByName("Cube_2");
         glass.name = "tank-glass";
@@ -841,7 +779,7 @@ function createWater(scale = 1.0) {
 function createCorals(numberOfCorals = 35, scale = .003) {
     const corals = new THREE.Group();
     corals.name = 'corals';
-	console.log('Đang tải model Corals')
+
     // Helper function to change coral color
     function changeCoralColor(coralModel, color) {
         coralModel.traverse((child) => {
@@ -961,12 +899,6 @@ function createCorals(numberOfCorals = 35, scale = .003) {
 			changeCoralColor(coralModel, randomColor);
 
 			corals.add(coralModel);
-
-			// Check if all corals have been loaded
-			if (corals.children.length === numberOfCorals) {
-				// All corals are loaded
-				console.log("Đã tải model Corals");
-			}
         });
     }
 
@@ -1134,16 +1066,26 @@ function update() {
 }
 
 
-var infoPanel = document.createElement("div");
-infoPanel.style.position = "absolute";
-infoPanel.style.background = "rgba(255,255,255,0.8)";
-infoPanel.style.padding = "10px";
-infoPanel.style.whiteSpace = "pre-line";
-document.body.appendChild(infoPanel);
+var infoPanel = document.querySelector("#info-panel");
 // không cho click trên infoPanel ảnh hưởng tới body
-infoPanel.addEventListener('Click', e => {
+infoPanel.addEventListener('click', e => {
     e.stopPropagation();
 })
+// add speech synthesis
+var infoPanelContent = infoPanel.querySelector('#info-panel-content');
+const speechSynth = window.speechSynthesis;
+var msg = new SpeechSynthesisUtterance();
+infoPanel.querySelector('#info-panel-speaker').addEventListener('click', e => {
+    msg.text = infoPanelContent.textContent;
+    msg.lang = 'vi-VN';
+    speechSynth.speak(msg);
+})
+// hide the info panel when the user clicks anywhere OUTSIDE infoPanel
+document.addEventListener("click", function (event) {
+    if (infoPanel.style.display !== "none") {
+        infoPanel.style.display = "none";
+    } 
+});
 
 function showInfoPanel(x, y, z, t, object) {
     // Lấy vị trí thế giới của vật thể
@@ -1158,7 +1100,7 @@ function showInfoPanel(x, y, z, t, object) {
     infoPanel.style.top = vector.y + "px";
     infoPanel.style.left = vector.x + "px"; 
 
-    infoPanel.textContent =
+    infoPanelContent.textContent =
         "Thông tin sinh vật: \n" +
         "Tên: " +
         y +
@@ -1172,14 +1114,6 @@ function showInfoPanel(x, y, z, t, object) {
     if (infoPanel.style.display !== 'block') {
         infoPanel.style.display = "block";
     }
-    
-    // hide the info panel when the user clicks anywhere OUTSIDE infoPanel
-    document.addEventListener("click", function (event) {
-        if (event.target !== infoPanel && 
-            infoPanel.style.display !== "none") {
-            infoPanel.style.display = "none";
-        } 
-    });
 }
 
 const objectInfoDict = {};

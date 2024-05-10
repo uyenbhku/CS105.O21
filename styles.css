@@ -61,3 +61,20 @@ label {
     cursor: pointer;
     background-color: rgb(89, 100, 255);
 }
+
+#info-panel {
+    position: absolute;
+    background: rgba(255,255,255,0.8);
+    padding: 10px;
+    display: none;
+}
+
+#info-panel-content {
+    white-space: pre-line;
+    margin-bottom: 10px;
+}
+
+#info-panel-speaker:hover {
+    cursor: pointer;
+    color: rgba(35, 168, 153, 0.6);
+}
