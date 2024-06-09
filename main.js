@@ -1,10 +1,13 @@
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { DragControls } from 'three/addons/controls/DragControls.js'
+import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { Water } from "three/addons/objects/Water.js";
 import * as THREE from "three";
 import * as YUKA from './lib/yuka.module.js';
+import { TeapotGeometry } from 'three/addons/geometries/TeapotGeometry.js';
 
-////// WELCOME PAGE
+//// WELCOME PAGE
 const progressBar = document.getElementById('progress-bar');
 const welcomePageContainer = document.querySelector('.welcome-page-container');
 const progressBarContainer = document.querySelector('.progress-bar-container');
@@ -39,7 +42,7 @@ hideButton.addEventListener('click', () => {
 
 ////// END WELCOME PAGE
 
-let scene, camera, renderer, controls, controls2, gui;
+let scene, camera, renderer, controls, gui;
 const loader = new GLTFLoader(loadingManager).setPath('./public/');
 
 const textureLoader = new THREE.TextureLoader(loadingManager).setPath('./public/');
@@ -58,79 +61,75 @@ function init() {
 
     // Orbit Controls
     controls = setupControls();
-    const controls2 = setupControls();
 
     // ROOM
-    var room = createRoom(500, 400, 300, 4,);
-    scene.add(room)
+    var all = new THREE.Group();
 
-    // Light fixture geometry
-    const fixtureGeometry = new THREE.BoxGeometry(6, 2, 6); // Adjust size as needed
-    const fixtureMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff }); // White color for fixture
-    const fixture = new THREE.Mesh(fixtureGeometry, fixtureMaterial);
-    fixture.name = 'fixture';
-    fixture.position.set(-73, 60, 0); // Position the fixture on the left wall
+    var room = createRoom(300, 200, 300, 4,);
+    all.add(room)
+
     // AMBIENT LIGHT 
     var ambientLight = createAmbientLight(2, 'rgb(255, 255, 255)');
-    ambientLight.position.copy(fixture.position); // Position the light at the same position as the fixture
-    ambientLight.add(fixture);
+    ambientLight.position.set(-73, 60, 0); // Position the light at the same position as the fixture
     ambientLight.name = 'ambientLight';
     room.add(ambientLight);
 
     // FISH TANK
-    let tankHeight = 200;
-    let tankWidth = 170;
-    let tankDepth = 200;
+    let tankHeight = 120;
+    let tankWidth = 100;
+    let tankDepth = 120;
     const fishTank = createFishTank(tankWidth, tankHeight, tankDepth);
-    fishTank.position.y -= tankHeight / 2 - 6;
+    fishTank.position.y -= tankHeight - 6;
     fishTank.position.z += 50;
     fishTank.name = 'fishTank'
 
     // Thêm blue whale vào hồ
-    const BlueWhale = createBlueWhale(controls, controls2);
-    BlueWhale.scale.set(0.06, 0.06, 0.06);
-    BlueWhale.position.x = 123 - 100;
-    BlueWhale.position.y = 123 - 100;
-    BlueWhale.position.z -= 100;
+    const BlueWhale = createBlueWhale();
+    BlueWhale.scale.set(0.03, 0.03, 0.03);
+    BlueWhale.position.x = 12;
+    BlueWhale.position.y = 12;
+    BlueWhale.position.z -= 60;
     BlueWhale.name = 'BlueWhale';
     fishTank.add(BlueWhale);
 
     // Thêm cá vàng Ryukin
     const RyukinGoldfish = createRyukinGoldfish();
     RyukinGoldfish.name = 'RyukinGoldFish';
-    RyukinGoldfish.scale.set(2, 2, 2);
-    RyukinGoldfish.position.y = 25;
-    RyukinGoldfish.position.x += 40;
-    RyukinGoldfish.position.z -= 100;
+    RyukinGoldfish.scale.set(1, 1, 1);
+    RyukinGoldfish.position.y = 15;
+    RyukinGoldfish.position.x += 20;
+    RyukinGoldfish.position.z -= 50;
     fishTank.add(RyukinGoldfish);
     
     // Thêm sứa
     const SpottedJellyfish = createSpottedJellyfish();
     SpottedJellyfish.name = 'SpottedJellyfish';
-    SpottedJellyfish.scale.set(12, 12, 12);
-    SpottedJellyfish.position.y = 15;
-    SpottedJellyfish.position.x -= 60;
-    SpottedJellyfish.position.z -= 100;
+    SpottedJellyfish.scale.set(6, 6, 6);
+    SpottedJellyfish.position.y = 8;
+    SpottedJellyfish.position.x -= 30;
+    SpottedJellyfish.position.z -= 50;
     fishTank.add(SpottedJellyfish);
     
     //Thêm cua
     const Crab = createCrab();
     Crab.name = 'Crab';
-    Crab.scale.set(3, 3, 3);
+    Crab.scale.set(1.5, 1.5, 1.5);
     Crab.position.x = 0;
-    Crab.position.y = -25;
-    Crab.position.z -= 100;
+    Crab.position.y = -20;
+    Crab.position.z -= 50;
     fishTank.add(Crab);
     
     //Thêm Orca
     const Orca = createOrca();
     Orca.name = 'Orca';
+    Orca.scale.set(0.5, 0.5, 0.5);
     fishTank.add(Orca);
     
 
     //Thêm Turtle
     const Turtle = createTurtle();
     Turtle.name = 'Turtle';
+    Turtle.scale.set(1, 1, 1);
     fishTank.add(Turtle);
     
     handleAnimalClick(BlueWhale, 'BlueWhale');
@@ -141,7 +140,7 @@ function init() {
     handleAnimalClick(RyukinGoldfish, 'RyukinGoldFish');
 
     // END CODE
-    scene.add(fishTank);
+    all.add(fishTank);
 
     // TABLE
     const table = createTable();
@@ -149,12 +148,12 @@ function init() {
     table.position.z += 110;
     table.position.x -= 30;
     table.name = 'table';
-    scene.add(table);
+    all.add(table);
 
     // LIGHTING
     var directionalLight = createDirectionalLight(1);
     directionalLight.intensity = 5;
-    scene.add(directionalLight);
+    all.add(directionalLight);
     // Create a helper to visualize the directional light's view and frustum
     const directionalLightHelper = new THREE.DirectionalLightHelper(
         directionalLight,
@@ -171,30 +170,57 @@ function init() {
     myLamp.position.x -= 17;
     myLamp.name = 'lampOnTheTable';
     table.add(myLamp);
+
+    // TEAPOT
+    const teapot = createTeaPot(0.1);
+    teapot.position.y += 6;
+    table.add(teapot);
+
     // see direction of directional light
-    // scene.add(new THREE.CameraHelper(directionalLight.shadow.camera)) 
-    directionalLight.shadowCameraVisible = true;
+    let helper = new THREE.CameraHelper(directionalLight.shadow.camera);
+    let helperVisible = false;
+    helper.visible = helperVisible;
+    scene.add(helper) 
     // SETUP GUI 
     var lightsFolder = gui.addFolder('Lights');
+    lightsFolder.add({ 'Helper Visible': helperVisible }, "Helper Visible")
+    .onChange((value) => {
+        helperVisible = value;
+        helper.visible = helperVisible;
+    });
     // Directional Light Controls
     setupDirectionalLightControls(directionalLight, lightsFolder);
 
     // Ambient Light Controls
     setupAmbientLightControls(ambientLight, lightsFolder);
-
+    
+    var pointLight = createPointLight(1000, 0xffffff);
+    pointLight.position.set(0, 0, 0);
+    var pointLightHelper = createSphere(10);
+    
+    const lightHelper = new THREE.PointLightHelper(pointLight, 20); // size of the helper sphere
+    pointLightHelper.position.set(0, 100, 0);
+    pointLightHelper.add(pointLight);
+    scene.add(pointLightHelper);
+    scene.add(lightHelper);
+    setupPointLightControls(pointLight, lightHelper, pointLightHelper, lightsFolder);
+    
     // Spot Light Controls
-    // var spotLight = createSpotLight(2, 0xffffff);
-
-    // spotLight.position.set(0, 100, 0);
-    // setupSpotLightControls(spotLight, lightsFolder);
+    var spotLight = createSpotLight(4, 0xffffff);
+    spotLight.position.set(0, -5, 0);
+    var spotLightHelper = createSphere(10, 'rgb(120,10,110)');
+    spotLightHelper.position.set(0, 150, 0);
+    spotLightHelper.add(spotLight);
+    setupSpotLightControls(spotLight, lightsFolder);
     // var spotLightHelper = new THREE.SpotLightHelper( spotLight, 2.5 );
-    // scene.add(spotLightHelper);
-    // scene.add(spotLight);
-
+    scene.add(spotLightHelper);
+    
     // END SETUP GUI
 
+    scene.add(all);
     // render
     document.body.appendChild(renderer.domElement);
+
     // dynamic update
     update();
     // responsive
@@ -204,10 +230,63 @@ function init() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
+    const dragControls = new DragControls( [pointLight, pointLightHelper, spotLight, spotLightHelper], camera, renderer.domElement );
+    dragControls.addEventListener( 'dragstart', function () { controls.enabled = false; } );
+    dragControls.addEventListener( 'dragend', function () { 
+        controls.enabled = true; 
+        controls.update();
+    } );
+    // let speed = 50;
+    // document.addEventListener("keydown", (event) => {
+    //     switch (event.key) {
+    //         case 'ArrowUp':
+    //             camera.position.y += speed;
+    //             break;
+    //         case 'ArrowDown':
+    //             camera.position.y -= speed;
+    //             break;
+    //         case 'ArrowLeft':
+    //             camera.position.x -= speed;
+    //             break;
+    //         case 'ArrowRight':
+    //             camera.position.x += speed;
+    //             break;
+    //         case 'w':
+    //             room.scale.y += 1;
+    //             break;
+    //         case 's':
+    //             room.scale.y -= 1;
+    //             break;
+    //         case 'a':
+    //             if (room.scale.x > 1.) 
+    //                 room.scale.x -= .5;
+    //             break;
+    //         case 'd':
+    //             if (room.scale.x < 4.) 
+    //                 room.scale.x += .5;
+    //             break;
+    //         case 'q':
+    //             if (room.scale.z > 1.) 
+    //                 room.scale.z -= .5;
+    //             break;
+    //         case 'e':
+    //             if (room.scale.z < 4.) 
+    //                 room.scale.z += .5;
+    //             break;
+    //         case 'z':
+    //             camera.position.z -= speed; // Move the object along the negative z-axis
+    //             break;
+    //         case 'x':
+    //             camera.position.z += speed; // Move the object along the positive z-axis
+    //             break;
+    //     }
+    //     update();
+    // });
+
     return scene;
 }
 
-function createBlueWhale(controls, controls2) {
+function createBlueWhale() {
     const BlueWhale = new THREE.Group();
     let mixer;
     let mesh;
@@ -231,10 +310,7 @@ function createBlueWhale(controls, controls2) {
         ];
         const path = new THREE.CatmullRomCurve3(points, true);
         function animate(time) {
-            const target = controls.target;
             controls.update();
-            controls2.target.set(target.x, target.y, target.z);
-            controls2.update();
             if (mesh) {
                 const t = (time / 8000 % 6) / 6; // chỉnh speed 
                 const position = path.getPointAt(t);
@@ -269,6 +345,8 @@ function createRyukinGoldfish() {
         `ryukin_goldfish/scene.gltf`,
         function (gltf) {
             object = gltf.scene;
+            object.traverse(function(obj) { obj.frustumCulled = false; });
+
             mixer = new THREE.AnimationMixer(object);
             gltf.animations.forEach((animation) => {
                 mixer.clipAction(animation).play();
@@ -417,6 +495,7 @@ function createOrca() {
         gltf.animations.forEach((animation) => {
             mixer.clipAction(animation).play();
         });
+        fish.scale.set(0.5, .5, .5);
         Orca.add(fish)
         Orca.matrixAutoUpdate = false
         const entityManager = new YUKA.EntityManager()
@@ -425,18 +504,18 @@ function createOrca() {
         swim.setRenderComponent(Orca, sync)
 
         const path = new YUKA.Path()
-        const x = -60;
-        const y = -130;
-        const z = 50;
+        const x = -40;
+        const y = 30;
+        const z = -80;
         path.loop = true
-        path.add(new YUKA.Vector3(0 + x, 2 + z, 8 + y))
-        path.add(new YUKA.Vector3(-2 + x, -2 + z, 4 + y))
-        path.add(new YUKA.Vector3(0 + x, 2 + z, 0 + y))
-        path.add(new YUKA.Vector3(4 + x, 0 + z, 4 + y))
-        path.add(new YUKA.Vector3(8 + x, -2 + z, 0 + y))
-        path.add(new YUKA.Vector3(10 + x, 2 + z, 4 + y))
-        path.add(new YUKA.Vector3(8 + x, 0 + z, 8 + y))
-        path.add(new YUKA.Vector3(4 + x, 0 + z, 10 + y))
+        path.add(new YUKA.Vector3(0 + x, 2 + y, 8 + z))
+        path.add(new YUKA.Vector3(-2 + x, -2 + y, 4 + z))
+        path.add(new YUKA.Vector3(0 + x, 2 + y, 0 + z))
+        path.add(new YUKA.Vector3(4 + x, 0 + y, 4 + z))
+        path.add(new YUKA.Vector3(8 + x, -2 + y, 0 + z))
+        path.add(new YUKA.Vector3(10 + x, 2 + y, 4 + z))
+        path.add(new YUKA.Vector3(8 + x, 0 + y, 8 + z))
+        path.add(new YUKA.Vector3(4 + x, 0 + y, 10 + z))
 
         swim.position.copy(path.current())
 
@@ -470,7 +549,6 @@ function createTurtle() {
 
     loader.load('sea_turtle/scene.gltf', function (gltf) {
         fish = gltf.scene
-        fish.scale.set(2, 2, 2);
         mixer = new THREE.AnimationMixer(fish);
         gltf.animations.forEach((animation) => {
             mixer.clipAction(animation).play();
@@ -486,9 +564,9 @@ function createTurtle() {
         dive.setRenderComponent(Turtle, sync)
 
         const path = new YUKA.Path()
-        const x = 80;
-        const y = 10;
-        const z = -170;
+        const x = 40;
+        const y = 5;
+        const z = -80;
         path.loop = true
         path.add(new YUKA.Vector3(0 + x, 2 + y, 8 + z))
         path.add(new YUKA.Vector3(-2 + x, -2 + y, 4 + z))
@@ -565,6 +643,30 @@ function setupAmbientLightControls(ambientLight, parentFolder = None) {
     ambientLightControls.add(ambientLight.position, 'z', -120, 120);
 }
 
+
+function setupPointLightControls(pointLight, lightHelper, pointLightHelper, parentFolder = None) {
+    if (!parentFolder) {
+        parentFolder = gui;
+    }
+
+    // Spot Light Controls
+    var pointLightFolder = parentFolder.addFolder("Point Light");
+    let pointLightVisible = true; // Initial state of ambient light visibility
+    pointLightFolder
+        .add({ visible: pointLightVisible }, "visible")
+        .onChange((value) => {
+            pointLightVisible = value;
+            pointLight.visible = pointLightVisible; // Toggle ambient light visibility
+            lightHelper.visible = pointLightHelper.visible = pointLightVisible;
+        });
+
+    pointLightFolder.add(pointLight, "intensity", 0, 5000).name("Intensity");
+    pointLightFolder.add(pointLight, "power", 0, 40000).name("Lumen");
+    pointLightFolder.add(pointLight, "distance", 0., 5000).name("Distance");
+    pointLightFolder.addColor(pointLight, "color").name("Color");
+    // spotLightFolder.add(spotLight, 'penumbra', 0, 1);
+}
+
 function setupSpotLightControls(spotLight, parentFolder = None) {
     if (!parentFolder) {
         parentFolder = gui;
@@ -580,17 +682,11 @@ function setupSpotLightControls(spotLight, parentFolder = None) {
             spotLight.visible = spotLightVisible; // Toggle ambient light visibility
         });
 
-    var posSpotLightControls = spotLightFolder.addFolder("Position");
-    var rotSpotLightControls = spotLightFolder.addFolder("Rotation");
     spotLightFolder.add(spotLight, "intensity", 0, 10).name("Intensity");
+    spotLightFolder.add(spotLight.position, "y", 0, 100);
     spotLightFolder.addColor(spotLight, "color").name("Color");
-    // spotLightFolder.add(spotLight, 'penumbra', 0, 1);
-    posSpotLightControls.add(spotLight.position, "x", -22, 22);
-    posSpotLightControls.add(spotLight.position, "y", -50, 100);
-    posSpotLightControls.add(spotLight.position, "z", -13, 13);
-    rotSpotLightControls.add(spotLight.rotation, "x", -1, 1);
-    rotSpotLightControls.add(spotLight.rotation, "y", -1, 1);
-    rotSpotLightControls.add(spotLight.rotation, "z", -1, 1);
+    spotLightFolder.add(spotLight, 'penumbra', 0, 10).name('Penumbra');
+    spotLightFolder.add(spotLight, 'angle', 0, 3.14).name('Angle');
 }
 
 // returns a room 
@@ -598,32 +694,32 @@ function createRoom(width, length, height, thickness, texturePath = '') {
     const room = new THREE.Group();
     let defaultColor = 'rgb(199, 199, 255)';
 
-    // Wall material
-    let wallMaterial;
-    if (texturePath) {
-        // Create a material with the loaded texture
-        wallMaterial = new THREE.MeshStandardMaterial({
-            map: textureLoader.load(texturePath), // Use the texture for color
-            side: THREE.DoubleSide, // Ensure texture is visible on both sides of the wall
-        });
-    }
-    else {
-        wallMaterial = new THREE.MeshStandardMaterial({
-            color: defaultColor,
-        });
-    }
+    
+    let floorMaterials = {};
+    floorMaterials[ 'default' ] = new THREE.MeshStandardMaterial({ color: defaultColor, });
+    floorMaterials[ 'wireframe' ] = new THREE.MeshBasicMaterial( { wireframe: true } );
+    floorMaterials[ 'flat' ] = new THREE.MeshPhongMaterial( { specular: 0x000000, flatShading: true, side: THREE.DoubleSide } );
+    floorMaterials[ 'smooth' ] = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
+    floorMaterials[ 'glossy' ] = new THREE.MeshPhongMaterial( { side: THREE.DoubleSide } );
 
     // Floor
     const floorGeometry = new THREE.BoxGeometry(length, thickness, width);
-    const floor = new THREE.Mesh(floorGeometry, wallMaterial);
+    let floor = new THREE.Mesh(floorGeometry, floorMaterials['default']);
     floor.position.y = -height / 2;
     floor.receiveShadow = true;
     floor.castShadow = true;
     room.add(floor);
 
+
+    let wallMaterials = {};
+    wallMaterials[ 'default' ] = new THREE.MeshStandardMaterial({ color: defaultColor, });
+    wallMaterials[ 'wireframe' ] = new THREE.MeshBasicMaterial( { wireframe: true } );
+    wallMaterials[ 'flat' ] = new THREE.MeshPhongMaterial( { specular: 0x000000, flatShading: true, side: THREE.DoubleSide } );
+    wallMaterials[ 'smooth' ] = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
+    wallMaterials[ 'glossy' ] = new THREE.MeshPhongMaterial( { side: THREE.DoubleSide } );
     // Left Wall
     const leftWallGeometry = new THREE.BoxGeometry(thickness, height, width);
-    const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+    let leftWall = new THREE.Mesh(leftWallGeometry, wallMaterials['default']);
     leftWall.position.x = -length / 2;
     // leftWall.position.y = height/2;
     leftWall.receiveShadow = true;
@@ -632,31 +728,118 @@ function createRoom(width, length, height, thickness, texturePath = '') {
 
     // Back Wall
     const backWallGeometry = new THREE.BoxGeometry(length, height, thickness);
-    const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
+    let backWall = new THREE.Mesh(backWallGeometry, wallMaterials['default']);
     backWall.position.z = -width / 2;
     backWall.castShadow = true;
     backWall.receiveShadow = true;
     room.add(backWall);
+
+
+    // add datGUI
+    var roomFolder = gui.addFolder('Room settings');
+    var wallFolder = roomFolder.addFolder('Wall settings');
+    var floorFolder = roomFolder.addFolder('Floor settings');
+    
+    const wallMaterialControls = {
+        'Wall materials': 'default',
+    }
+    
+    wallFolder.add(wallMaterialControls, 'Wall materials', {
+        'Default': 'default',
+        'Wireframe': 'wireframe',
+        'Flat': 'flat',
+        'Smooth': 'smooth',
+        'Glossy': 'glossy',
+    })
+        .onChange(function(value) {
+        // Update wall texture when GUI control changes
+        leftWall.material = wallMaterials[value];
+        backWall.material = wallMaterials[value];
+    });
 
     // GUI controls object
     const wallControls = {
         'Wall textures': texturePath || '',
         'Wall color': defaultColor,
     };
-    gui.add(wallControls, 'Wall textures', {
-        Wood: 'textures/wooden.jpg',
-        Rocky: 'textures/rocky.jpg',
-        Brick: 'textures/brick.jpg',
-        'Gray Brick': 'textures/graybricks.jpg',
+    wallFolder.add(wallControls, 'Wall textures', {
+        Plain: null,
+        Wood: 'wall_textures/wooden.jpg',
+        Rocky: 'wall_textures/rocky.jpg',
+        Brick: 'wall_textures/brick.jpg',
+        'Gray Brick': 'wall_textures/graybricks.jpg',
     }).onChange(function(value) {
         // Update wall texture when GUI control changes
-        wallMaterial.map = textureLoader.load(value);
-        wallMaterial.needsUpdate = true;
+        if (value) {
+            backWall.material.map = textureLoader.load(value);
+            leftWall.material.map = textureLoader.load(value);
+        }
+        else {
+            backWall.material = wallMaterials['default'];
+            leftWall.material = wallMaterials['default'];
+        }
+        backWall.material.needsUpdate = true;
+        leftWall.material.needsUpdate = true;
+        // wallMaterial.color.set( 0xffffff );
     });
 
-    gui.addColor(wallControls, 'Wall color').onChange(function (value) {
+    // turn on and off
+    let wallVisible = true; // Initial state of visibility
+    wallFolder
+        .add({ visible: wallVisible }, "visible")
+        .onChange((value) => {
+            wallVisible = value;
+            backWall.visible = wallVisible; // Toggle visibility
+            leftWall.visible = wallVisible; // Toggle visibility
+        });
+
+    wallFolder.addColor(wallControls, 'Wall color').onChange(function (value) {
         // Update wall color when GUI control changes
-        wallMaterial.color.set(value);
+        backWall.material.color.set(value);
+        leftWall.material.color.set(value);
+    });
+
+    // floor settings
+    const floorMaterialControls = {
+        'Floor materials': 'default',
+    }
+    
+    floorFolder.add(floorMaterialControls, 'Floor materials', {
+        'Default': 'default',
+        'Flat': 'flat',
+        'Smooth': 'smooth',
+        'Glossy': 'glossy',
+    })
+        .onChange(function(value) {
+        // Update wall texture when GUI control changes
+        floor.material = floorMaterials[value];
+    });
+
+    const floorControls = {
+        'Floor textures': texturePath || '',
+        'Floor color': defaultColor,
+    };
+    floorFolder.add(floorControls, 'Floor textures', {
+        Plain: null,
+        Wood: 'floor_textures/wooden.jpg',
+        Brick: 'floor_textures/brick.jpg',
+        Grass: 'floor_textures/grass.jpg',
+        Pattern1: 'floor_textures/pattern1.jpg',
+        Pattern2: 'floor_textures/pattern2.jpg',
+    }).onChange(function(value) {
+        // Update wall texture when GUI control changes
+        if (value) {
+            floor.material.map = textureLoader.load(value);
+        }
+        else {
+            floor.material = floorMaterials['default'];
+        }
+        floor.material.needsUpdate = true;
+    });
+
+    floorFolder.addColor(floorControls, 'Floor color').onChange(function (value) {
+        // Update wall color when GUI control changes
+        floor.material.color.set(value);
     });
 
     return room;
@@ -679,6 +862,7 @@ function createFishTank(tankWidth = 170, tankHeight = 200, tankDepth = 200) {
                 child.castShadow = true;
                 child.receiveShadow = true;
             }
+            child.frustumCulled = false;
         });
 
         const glass = fishTankModel.getObjectByName("Cube_2");
@@ -909,10 +1093,11 @@ function createTable(tableWidth = 50, tableLength = 50, tableThickness = 2, legW
     const table = new THREE.Group();
 
     // Table top
-    const texture = textureLoader.load('textures/wooden.jpg'); 
-    const material = new THREE.MeshPhysicalMaterial({
+    const texture = textureLoader.load('wall_textures/wooden.jpg'); 
+    const material = new THREE.MeshLambertMaterial({
         map: texture, // Use the texture for color
         side: THREE.DoubleSide, // Ensure texture is visible on both sides of the wall
+        emissive: 'black',
     });
     const tableTopGeometry = new THREE.BoxGeometry(tableWidth, tableThickness, tableLength);
     const tableTop = new THREE.Mesh(tableTopGeometry, material);
@@ -956,19 +1141,36 @@ function createTable(tableWidth = 50, tableLength = 50, tableThickness = 2, legW
     return table;
 }
 
+function createTeaPot(scale) {
+    var object = new THREE.Mesh(
+        new TeapotGeometry(),
+        new THREE.MeshStandardMaterial( {color:'silver', metalness: 0.8, roughness:0.2, side: THREE.DoubleSide} )
+    );	
+    object.scale.set(scale, scale, scale);
+    object.castShadow = true;
+    object.receiveShadow = true;
+    return object;
+}
+
 function createLamp(scale = 1.0) {
     const lamp = new THREE.Group();
 
     // Lamp base
     const baseGeometry = new THREE.BoxGeometry(4, 1, 4);
-    const baseMaterial = new THREE.MeshPhysicalMaterial({ color: 0x606060 }); // Gray color
+    const baseMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x606060,
+        shininess: 0.7,
+    }); // Gray color
     const base = new THREE.Mesh(baseGeometry, baseMaterial);
     base.castShadow = true;
     lamp.add(base);
 
     // Lamp stand
     const standGeometry = new THREE.CylinderGeometry(0.5, 0.5, 20, 32);
-    const standMaterial = new THREE.MeshPhysicalMaterial({ color: 0x606060 }); // Gray color
+    const standMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x606060, // Gray color
+        shininess: 0.7,
+    }); 
     const stand = new THREE.Mesh(standGeometry, standMaterial);
     stand.position.y = 10; // Position the stand above the base
     lamp.add(stand);
@@ -977,7 +1179,11 @@ function createLamp(scale = 1.0) {
 
     // Lamp shade
     const shadeGeometry = new THREE.ConeGeometry(6, 12, 32);
-    const shadeMaterial = new THREE.MeshPhysicalMaterial({ color: 0xFFFF00 }); // Yellow color
+    const shadeMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xFFFF00, // Yellow color
+        shininess: 0.9,
+        flatShading: true
+    }); 
     const shade = new THREE.Mesh(shadeGeometry, shadeMaterial);
     shade.position.y = 20; // Position the shade above the stand
     shade.castShadow = true;
@@ -995,15 +1201,14 @@ function createDirectionalLight(intensity, color = 0xffffff) {
     // Configure shadow parameters
     light.shadow.mapSize.width = 100; // Set shadow map width (higher resolution)
     light.shadow.mapSize.height = 100; // Set shadow map height (higher resolution)
-    light.shadow.camera.near = 1; // Near plane of the shadow camera
-    light.shadow.camera.far = 50; // Far plane of the shadow camera
-    light.shadow.camera.left = -100; // Left frustum edge
-    light.shadow.camera.right = 100; // Right frustum edge
-    light.shadow.camera.top = 200; // Top frustum edge
-    light.shadow.camera.bottom = -200; // Bottom frustum edge
+    // light.shadow.camera.near = 100; // Near plane of the shadow camera
+    // light.shadow.camera.far = 500; // Far plane of the shadow camera
+    // light.shadow.camera.left = -100; // Left frustum edge
+    // light.shadow.camera.right = 1000; // Right frustum edge
+    // light.shadow.camera.top = 200; // Top frustum edge
+    // light.shadow.camera.bottom = -200; // Bottom frustum edge
     light.shadow.bias = -0.001; // Bias to avoid shadow acne
     light.shadow.camera.visible = true; // Show the shadow camera helper
-    light.shadowDarkness = 0.5;
     return light;
 }
 
@@ -1012,14 +1217,34 @@ function createAmbientLight(intensity, color = 0xffffff) {
     return light;
 }
 
-function createSpotLight(intensity, color = 0xffffff, angle = Math.PI / 6) {
-    var light = new THREE.SpotLight(color, intensity);
+function createSphere(size, color='rgb(10,120,120)') {
+    return new THREE.Mesh(
+        new THREE.SphereGeometry(size, 24, 24),
+        new THREE.MeshPhongMaterial({
+            color: color
+        })
+    )
+}
+
+function createPointLight(intensity=100, color = 0xffffff) {
+    var light = new THREE.PointLight(color, intensity, 100);
     light.castShadow = true;
-    light.shadow.bias = 0.001;
+    light.shadow.bias = -0.001;
     light.shadow.camera.visible = true; // Show the shadow camera helper
     // Set the light angle (spread)
-    light.angle = angle;
+    // light.angle = angle;
 
+    return light;
+}
+
+function createSpotLight(intensity, color = 0xffffff, angle = Math.PI / 2) {
+    var light = new THREE.SpotLight(color, intensity);
+    light.castShadow = true;
+    light.shadow.bias = -0.001;
+    light.shadow.camera.visible = true; // Show the shadow camera helper
+    light.shadow.mapSize.width = 2000; // Set shadow map width (higher resolution)
+    light.shadow.mapSize.height = 2000; // Set shadow map height (higher resolution)
+    // Set the light angle (spread)
     return light;
 }
 
@@ -1039,30 +1264,34 @@ function setupRenderer() {
 
 function setupCamera() {
     camera = new THREE.PerspectiveCamera(
-        75,
+        45,
         window.innerWidth / window.innerHeight,
-        0.1,
+        0.01,
         1000
     );
     camera.position.set(500, 20, 400);
     return camera;
 }
 
+
 function setupControls() {
     controls = new OrbitControls(camera, renderer.domElement);
+    controls.dragToLook = true;
     controls.target = new THREE.Vector3(0, 0, 0);
     controls.maxDistance = 800;
     controls.update();
+
     return controls;
 }
 
-function update() {
-    // Render the scene
-    renderer.render(scene, camera);
 
-    // controls.update();
+function update() {
+    // Render the scene;
     // handle the render of the scene
     requestAnimationFrame(update);
+    renderer.render(scene, camera);
+    controls.update();
+    renderer.shadowMap.enabled = true;
 }
 
 
@@ -1086,6 +1315,7 @@ document.addEventListener("click", function (event) {
         infoPanel.style.display = "none";
     } 
 });
+
 
 function showInfoPanel(x, y, z, t, object) {
     // Lấy vị trí thế giới của vật thể
@@ -1125,6 +1355,7 @@ fetch('info.json')
             });
         })
         .catch(error => console.error('No info', error));
+
 
 function handleAnimalClick(animal, animalName) {
     addEventListener('click', function (event) {
