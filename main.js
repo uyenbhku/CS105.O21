@@ -1,6 +1,7 @@
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DragControls } from 'three/addons/controls/DragControls.js'
 import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+import { MapControls } from 'three/addons/controls/MapControls.js';
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { Water } from "three/addons/objects/Water.js";
 import * as THREE from "three";
@@ -43,6 +44,7 @@ hideButton.addEventListener('click', () => {
 ////// END WELCOME PAGE
 
 let scene, camera, renderer, controls, gui;
+var spotLightHelper2;
 const loader = new GLTFLoader(loadingManager).setPath('./public/');
 
 const textureLoader = new THREE.TextureLoader(loadingManager).setPath('./public/');
@@ -69,7 +71,7 @@ function init() {
     all.add(room)
 
     // AMBIENT LIGHT 
-    var ambientLight = createAmbientLight(2, 'rgb(255, 255, 255)');
+    var ambientLight = createAmbientLight(0.7, 'rgb(255, 255, 255)');
     ambientLight.position.set(-73, 60, 0); // Position the light at the same position as the fixture
     ambientLight.name = 'ambientLight';
     room.add(ambientLight);
@@ -151,8 +153,7 @@ function init() {
     all.add(table);
 
     // LIGHTING
-    var directionalLight = createDirectionalLight(1);
-    directionalLight.intensity = 5;
+    var directionalLight = createDirectionalLight(2);
     all.add(directionalLight);
     // Create a helper to visualize the directional light's view and frustum
     const directionalLightHelper = new THREE.DirectionalLightHelper(
@@ -170,6 +171,10 @@ function init() {
     myLamp.position.x -= 17;
     myLamp.name = 'lampOnTheTable';
     table.add(myLamp);
+    var pointLight2 = createPointLight(500, 0xffffff);
+    pointLight2.position.set(0, 5, 0);
+    myLamp.add(pointLight2);
+    // scene.add(new THREE.PointLightHelper(pointLight2, 10));
 
     // TEAPOT
     const teapot = createTeaPot(0.1);
@@ -209,9 +214,11 @@ function init() {
     var spotLight = createSpotLight(4, 0xffffff);
     spotLight.position.set(0, -5, 0);
     var spotLightHelper = createSphere(10, 'rgb(120,10,110)');
-    spotLightHelper.position.set(0, 150, 0);
+    spotLightHelper.position.set(0, 50, 0);
     spotLightHelper.add(spotLight);
-    setupSpotLightControls(spotLight, lightsFolder);
+    spotLightHelper2 = new THREE.SpotLightHelper( spotLight );
+    scene.add( spotLightHelper2 );
+    setupSpotLightControls(spotLight, spotLightHelper, spotLightHelper2, lightsFolder);
     // var spotLightHelper = new THREE.SpotLightHelper( spotLight, 2.5 );
     scene.add(spotLightHelper);
     
@@ -230,12 +237,19 @@ function init() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    const dragControls = new DragControls( [pointLight, pointLightHelper, spotLight, spotLightHelper], camera, renderer.domElement );
+    const dragControls = new DragControls( [
+        pointLight, pointLightHelper, spotLight, spotLightHelper, spotLightHelper2],
+        camera, 
+        renderer.domElement 
+    );
     dragControls.addEventListener( 'dragstart', function () { controls.enabled = false; } );
     dragControls.addEventListener( 'dragend', function () { 
         controls.enabled = true; 
         controls.update();
     } );
+
+    // const controls2 = new MapControls( camera, renderer.domElement );
+    // controls2.enableDamping = true;
     // let speed = 50;
     // document.addEventListener("keydown", (event) => {
     //     switch (event.key) {
@@ -667,7 +681,7 @@ function setupPointLightControls(pointLight, lightHelper, pointLightHelper, pare
     // spotLightFolder.add(spotLight, 'penumbra', 0, 1);
 }
 
-function setupSpotLightControls(spotLight, parentFolder = None) {
+function setupSpotLightControls(spotLight, spotLightHelper, spotLightHelper2, parentFolder = None) {
     if (!parentFolder) {
         parentFolder = gui;
     }
@@ -679,11 +693,22 @@ function setupSpotLightControls(spotLight, parentFolder = None) {
         .add({ visible: spotLightVisible }, "visible")
         .onChange((value) => {
             spotLightVisible = value;
-            spotLight.visible = spotLightVisible; // Toggle ambient light visibility
+            spotLightHelper2.visible 
+            = spotLight.visible 
+            = spotLightHelper.visible = spotLightVisible; // Toggle ambient light visibility
         });
-
+    let spotLightHelper2Visible = true; // Initial state of ambient light visibility
+    spotLightFolder
+        .add({ helper: spotLightHelper2Visible }, "helper")
+        .onChange((value) => {
+            spotLightHelper2Visible = value;
+            spotLightHelper2.visible = spotLightHelper2Visible; 
+        });
+    spotLightFolder.add(spotLight, "power", 0, 100000).name("Lumen");
     spotLightFolder.add(spotLight, "intensity", 0, 10).name("Intensity");
-    spotLightFolder.add(spotLight.position, "y", 0, 100);
+    spotLightFolder.add(spotLight.rotation, "x", 0, 3.14);
+    spotLightFolder.add(spotLight.rotation, "y", 0, 3.14);
+    spotLightFolder.add(spotLight.rotation, "z", 0, 3.14);
     spotLightFolder.addColor(spotLight, "color").name("Color");
     spotLightFolder.add(spotLight, 'penumbra', 0, 10).name('Penumbra');
     spotLightFolder.add(spotLight, 'angle', 0, 3.14).name('Angle');
@@ -697,10 +722,9 @@ function createRoom(width, length, height, thickness, texturePath = '') {
     
     let floorMaterials = {};
     floorMaterials[ 'default' ] = new THREE.MeshStandardMaterial({ color: defaultColor, });
-    floorMaterials[ 'wireframe' ] = new THREE.MeshBasicMaterial( { wireframe: true } );
     floorMaterials[ 'flat' ] = new THREE.MeshPhongMaterial( { specular: 0x000000, flatShading: true, side: THREE.DoubleSide } );
     floorMaterials[ 'smooth' ] = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
-    floorMaterials[ 'glossy' ] = new THREE.MeshPhongMaterial( { side: THREE.DoubleSide } );
+    floorMaterials[ 'glossy' ] = new THREE.MeshStandardMaterial( { side: THREE.DoubleSide, metalness: 0.6, roughness:0.2,} );
 
     // Floor
     const floorGeometry = new THREE.BoxGeometry(length, thickness, width);
@@ -714,9 +738,9 @@ function createRoom(width, length, height, thickness, texturePath = '') {
     let wallMaterials = {};
     wallMaterials[ 'default' ] = new THREE.MeshStandardMaterial({ color: defaultColor, });
     wallMaterials[ 'wireframe' ] = new THREE.MeshBasicMaterial( { wireframe: true } );
-    wallMaterials[ 'flat' ] = new THREE.MeshPhongMaterial( { specular: 0x000000, flatShading: true, side: THREE.DoubleSide } );
+    wallMaterials[ 'flat' ] = new THREE.MeshPhongMaterial( { specular: 0x000000, shininess: 100, side: THREE.DoubleSide } );
     wallMaterials[ 'smooth' ] = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
-    wallMaterials[ 'glossy' ] = new THREE.MeshPhongMaterial( { side: THREE.DoubleSide } );
+    wallMaterials[ 'glossy' ] = new THREE.MeshStandardMaterial( { side: THREE.DoubleSide, metalness: 0.6, roughness:0.2,} );
     // Left Wall
     const leftWallGeometry = new THREE.BoxGeometry(thickness, height, width);
     let leftWall = new THREE.Mesh(leftWallGeometry, wallMaterials['default']);
@@ -1182,6 +1206,9 @@ function createLamp(scale = 1.0) {
     const shadeMaterial = new THREE.MeshPhongMaterial({ 
         color: 0xFFFF00, // Yellow color
         shininess: 0.9,
+        emissive: 0x606060,
+        transmission: 0.7,
+        transparent: 0.7,
         flatShading: true
     }); 
     const shade = new THREE.Mesh(shadeGeometry, shadeMaterial);
@@ -1221,7 +1248,10 @@ function createSphere(size, color='rgb(10,120,120)') {
     return new THREE.Mesh(
         new THREE.SphereGeometry(size, 24, 24),
         new THREE.MeshPhongMaterial({
-            color: color
+            color: color,
+            transparent: true,
+            emissive: color,
+            opacity: 0.7
         })
     )
 }
@@ -1244,6 +1274,10 @@ function createSpotLight(intensity, color = 0xffffff, angle = Math.PI / 2) {
     light.shadow.camera.visible = true; // Show the shadow camera helper
     light.shadow.mapSize.width = 2000; // Set shadow map width (higher resolution)
     light.shadow.mapSize.height = 2000; // Set shadow map height (higher resolution)
+    
+    light.shadow.camera.near = 500;
+    light.shadow.camera.far = 4000;
+    light.shadow.camera.fov = 30;
     // Set the light angle (spread)
     return light;
 }
@@ -1253,7 +1287,7 @@ function setupRenderer() {
     // set size
     renderer.setSize(window.innerWidth, window.innerHeight);
     // set scene background
-    renderer.setClearColor("rgb(100, 100, 100)");
+    renderer.setClearColor("rgb(50, 50, 50)");
     renderer.physicallyCorrectLights = true;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1291,6 +1325,7 @@ function update() {
     requestAnimationFrame(update);
     renderer.render(scene, camera);
     controls.update();
+    spotLightHelper2.update()
     renderer.shadowMap.enabled = true;
 }
 
