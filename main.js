@@ -586,15 +586,11 @@ function setupDirectionalLightControls(directionalLight, directionalHelper, pare
     });
 
     var posDirectionalLightControls = directionalLightFolder.addFolder('Position');
-    // var rotDirectionalLightControls = directionalLightFolder.addFolder('Rotation');
     directionalLightFolder.add(directionalLight, 'intensity', 0, 10).name('Intensity');
     directionalLightFolder.addColor(directionalLight, 'color').name('Color');
     posDirectionalLightControls.add(directionalLight.position, 'x', -90, 90);
     posDirectionalLightControls.add(directionalLight.position, 'y', -100, 100);
     posDirectionalLightControls.add(directionalLight.position, 'z', -50, 50);
-    // rotDirectionalLightControls.add(directionalLight.rotation, 'x', -3.14, 3.14);
-    // rotDirectionalLightControls.add(directionalLight.rotation, 'y', -3.13, 3.14);
-    // rotDirectionalLightControls.add(directionalLight.rotation, 'z', -3.14, 3.14);
 }
 
 function setupAmbientLightControls(ambientLight, parentFolder = None) {
@@ -612,7 +608,6 @@ function setupAmbientLightControls(ambientLight, parentFolder = None) {
             ambientLightVisible = value;
             ambientLight.visible = ambientLightVisible; // Toggle ambient light visibility
         });
-    ambientLightControls.add(ambientLight.position, 'z', -120, 120);
 }
 
 function setupPointLightControls(pointLight, lightHelper, pointLightHelper, parentFolder = None) {
