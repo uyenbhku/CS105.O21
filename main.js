@@ -87,7 +87,37 @@ function init() {
     fishTank.name = 'fishTank';
     controls.target.y = fishTank.position.y;
     controls.target.y += tankHeight/2;
+    // room.add(fishTank)
+    all.add(fishTank)
 
+    var roomVisible = false;
+    let initScaleTank = fishTank.scale.y; // Initial state of ambient light visibility
+    let scaleTank = initScaleTank; // Initial state of ambient light visibility
+    gui.add({'Reset room': roomVisible}, 'Reset room')
+        .onChange((value) => {
+            roomVisible = value;
+            room.visible = roomVisible;
+            if (roomVisible) {
+                scaleTank = initScaleTank;
+                fishTank.scale.set(scaleTank, scaleTank, scaleTank);
+                controls.target.y = fishTank.position.y;
+            }
+        })
+    gui.add(fishTank.rotation, 'y', 0., 10).name('Rotate fish tank')
+        .onChange((val) => {
+            if (!roomVisible) {
+                room.visible = false;
+                roomVisible = false;
+            }
+        })
+    gui.add({ 'Tank Scale': scaleTank }, "Tank Scale", 0.01, 3.)
+        .onChange((value) => {
+            scaleTank = value;
+            fishTank.scale.set(scaleTank, scaleTank, scaleTank);
+            controls.target.y = fishTank.position.y;
+            room.visible = false;
+            roomVisible = false;
+        });
     // Thêm blue whale vào hồ
     const BlueWhale = createBlueWhale();
     BlueWhale.scale.set(0.03, 0.03, 0.03);
@@ -144,8 +174,8 @@ function init() {
     handleAnimalClick(SpottedJellyfish, 'SpottedJellyfish');
     handleAnimalClick(RyukinGoldfish, 'RyukinGoldFish');
 
-    // END CODE
-    all.add(fishTank);
+    // // END CODE
+    // all.add(fishTank);
 
     // TABLE
     const table = createTable();
@@ -153,7 +183,7 @@ function init() {
     table.position.z += 110;
     table.position.x -= 30;
     table.name = 'table';
-    all.add(table);
+    room.add(table);
 
     // LIGHTING
     var directionalLight = createDirectionalLight(2);
