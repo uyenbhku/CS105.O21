@@ -85,7 +85,9 @@ function init() {
     const fishTank = createFishTank(tankWidth, tankHeight, tankDepth);
     fishTank.position.y -= tankHeight - 6;
     fishTank.position.z += 50;
-    fishTank.name = 'fishTank'
+    fishTank.name = 'fishTank';
+    controls.target.y = fishTank.position.y;
+    controls.target.y += tankHeight/2;
 
     // Thêm blue whale vào hồ
     const BlueWhale = createBlueWhale();
@@ -219,6 +221,7 @@ function init() {
     spotLightHelper.position.set(0, 50, 0);
     spotLightHelper.add(spotLight);
     spotLightHelper2 = new THREE.SpotLightHelper( spotLight );
+    spotLightHelper2.visible = false;
     scene.add( spotLightHelper2 );
     setupSpotLightControls(spotLight, spotLightHelper, spotLightHelper2, lightsFolder);
     // var spotLightHelper = new THREE.SpotLightHelper( spotLight, 2.5 );
@@ -649,7 +652,7 @@ function setupSpotLightControls(spotLight, spotLightHelper, spotLightHelper2, pa
             = spotLight.visible 
             = spotLightHelper.visible = spotLightVisible; // Toggle ambient light visibility
         });
-    let spotLightHelper2Visible = true; // Initial state of ambient light visibility
+    let spotLightHelper2Visible = false; // Initial state of ambient light visibility
     spotLightFolder
         .add({ helper: spotLightHelper2Visible }, "helper")
         .onChange((value) => {
