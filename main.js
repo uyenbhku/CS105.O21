@@ -2,8 +2,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DragControls } from 'three/addons/controls/DragControls.js'
 // import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 // import { MapControls } from 'three/addons/controls/MapControls.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+// import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+// import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { Water } from "three/addons/objects/Water.js";
 import * as THREE from "three";
@@ -62,7 +62,6 @@ function init() {
     camera = setupCamera();
     // Initialize and config a renderer
     renderer = setupRenderer();
-
     // Orbit Controls
     controls = setupControls();
 
@@ -165,7 +164,8 @@ function init() {
         10
     );
     // directionalLight.position.copy();
-    directionalLight.target.position.copy(directionalLightHelper.position);
+    directionalLight.target.position.copy(room.position);
+    scene.add(directionalLight.target);
     directionalLight.name = 'directionalLight';
     directionalLight.add(directionalLightHelper);
     // LAMP
@@ -186,19 +186,14 @@ function init() {
     table.add(teapot);
 
     // see direction of directional light
-    let helper = new THREE.CameraHelper(directionalLight.shadow.camera);
-    let helperVisible = false;
-    helper.visible = helperVisible;
-    scene.add(helper) 
+    let directionalHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+    directionalHelper.visible = false;
+    scene.add(directionalHelper);
+
     // SETUP GUI 
     var lightsFolder = gui.addFolder('Lights');
-    lightsFolder.add({ 'Helper Visible': helperVisible }, "Helper Visible")
-    .onChange((value) => {
-        helperVisible = value;
-        helper.visible = helperVisible;
-    });
     // Directional Light Controls
-    setupDirectionalLightControls(directionalLight, lightsFolder);
+    setupDirectionalLightControls(directionalLight, directionalHelper, lightsFolder);
 
     // Ambient Light Controls
     setupAmbientLightControls(ambientLight, lightsFolder);
@@ -570,7 +565,7 @@ function createTurtle() {
     return Turtle
 }
 
-function setupDirectionalLightControls(directionalLight, parentFolder = None) {
+function setupDirectionalLightControls(directionalLight, directionalHelper, parentFolder = None) {
     if (!parentFolder) {
         parentFolder = gui;
     }
@@ -582,6 +577,13 @@ function setupDirectionalLightControls(directionalLight, parentFolder = None) {
             directionalLightVisible = value;
             directionalLight.visible = directionalLightVisible; // Toggle ambient light visibility
         });
+
+    let directionalHelperVisible = false;
+    directionalLightFolder.add({ 'Helper Visible': directionalHelperVisible }, "Helper Visible")
+    .onChange((value) => {
+        directionalHelperVisible = value;
+        directionalHelper.visible = directionalHelperVisible;
+    });
 
     var posDirectionalLightControls = directionalLightFolder.addFolder('Position');
     // var rotDirectionalLightControls = directionalLightFolder.addFolder('Rotation');
@@ -1176,14 +1178,14 @@ function createDirectionalLight(intensity, color = 0xffffff) {
     light.castShadow = true;
 
     // Configure shadow parameters
-    light.shadow.mapSize.width = 100; // Set shadow map width (higher resolution)
-    light.shadow.mapSize.height = 100; // Set shadow map height (higher resolution)
-    // light.shadow.camera.near = 100; // Near plane of the shadow camera
-    // light.shadow.camera.far = 500; // Far plane of the shadow camera
-    // light.shadow.camera.left = -100; // Left frustum edge
-    // light.shadow.camera.right = 1000; // Right frustum edge
-    // light.shadow.camera.top = 200; // Top frustum edge
-    // light.shadow.camera.bottom = -200; // Bottom frustum edge
+    light.shadow.mapSize.width = 2000; // Set shadow map width (higher resolution)
+    light.shadow.mapSize.height = 2000; // Set shadow map height (higher resolution)
+    light.shadow.camera.near = 100; // Near plane of the shadow camera
+    light.shadow.camera.far = 500; // Far plane of the shadow camera
+    light.shadow.camera.left = -100; // Left frustum edge
+    light.shadow.camera.right = 1000; // Right frustum edge
+    light.shadow.camera.top = 200; // Top frustum edge
+    light.shadow.camera.bottom = -200; // Bottom frustum edge
     light.shadow.bias = -0.001; // Bias to avoid shadow acne
     light.shadow.camera.visible = true; // Show the shadow camera helper
     return light;
@@ -1238,6 +1240,7 @@ function setupRenderer() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     // set scene background
     renderer.setClearColor("rgb(50, 50, 50)");
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.physicallyCorrectLights = true;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1277,6 +1280,7 @@ function update() {
     // handle the render of the scene
     requestAnimationFrame(update);
     renderer.render(scene, camera);
+
     controls.update();
     spotLightHelper2.update()
     renderer.shadowMap.enabled = true;
