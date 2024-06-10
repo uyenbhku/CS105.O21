@@ -633,7 +633,6 @@ function setupPointLightControls(pointLight, lightHelper, pointLightHelper, pare
     pointLightFolder.add(pointLight, "power", 0, 40000).name("Lumen");
     pointLightFolder.add(pointLight, "distance", 0., 5000).name("Distance");
     pointLightFolder.addColor(pointLight, "color").name("Color");
-    // spotLightFolder.add(spotLight, 'penumbra', 0, 1);
 }
 
 function setupSpotLightControls(spotLight, spotLightHelper, spotLightHelper2, parentFolder = None) {
@@ -661,11 +660,8 @@ function setupSpotLightControls(spotLight, spotLightHelper, spotLightHelper2, pa
         });
     spotLightFolder.add(spotLight, "power", 0, 100000).name("Lumen");
     spotLightFolder.add(spotLight, "intensity", 0, 10).name("Intensity");
-    spotLightFolder.add(spotLight.rotation, "x", 0, 3.14);
-    spotLightFolder.add(spotLight.rotation, "y", 0, 3.14);
-    spotLightFolder.add(spotLight.rotation, "z", 0, 3.14);
     spotLightFolder.addColor(spotLight, "color").name("Color");
-    spotLightFolder.add(spotLight, 'penumbra', 0, 10).name('Penumbra');
+    spotLightFolder.add(spotLight, 'penumbra', 0., 1.).name('Penumbra');
     spotLightFolder.add(spotLight, 'angle', 0, 3.14).name('Angle');
 }
 
