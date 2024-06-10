@@ -1,7 +1,9 @@
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DragControls } from 'three/addons/controls/DragControls.js'
-import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
-import { MapControls } from 'three/addons/controls/MapControls.js';
+// import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+// import { MapControls } from 'three/addons/controls/MapControls.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { Water } from "three/addons/objects/Water.js";
 import * as THREE from "three";
@@ -238,7 +240,7 @@ function init() {
     });
 
     const dragControls = new DragControls( [
-        pointLight, pointLightHelper, spotLight, spotLightHelper, spotLightHelper2],
+        pointLight, pointLightHelper, spotLight, spotLightHelper,],
         camera, 
         renderer.domElement 
     );
@@ -247,55 +249,6 @@ function init() {
         controls.enabled = true; 
         controls.update();
     } );
-
-    // const controls2 = new MapControls( camera, renderer.domElement );
-    // controls2.enableDamping = true;
-    // let speed = 50;
-    // document.addEventListener("keydown", (event) => {
-    //     switch (event.key) {
-    //         case 'ArrowUp':
-    //             camera.position.y += speed;
-    //             break;
-    //         case 'ArrowDown':
-    //             camera.position.y -= speed;
-    //             break;
-    //         case 'ArrowLeft':
-    //             camera.position.x -= speed;
-    //             break;
-    //         case 'ArrowRight':
-    //             camera.position.x += speed;
-    //             break;
-    //         case 'w':
-    //             room.scale.y += 1;
-    //             break;
-    //         case 's':
-    //             room.scale.y -= 1;
-    //             break;
-    //         case 'a':
-    //             if (room.scale.x > 1.) 
-    //                 room.scale.x -= .5;
-    //             break;
-    //         case 'd':
-    //             if (room.scale.x < 4.) 
-    //                 room.scale.x += .5;
-    //             break;
-    //         case 'q':
-    //             if (room.scale.z > 1.) 
-    //                 room.scale.z -= .5;
-    //             break;
-    //         case 'e':
-    //             if (room.scale.z < 4.) 
-    //                 room.scale.z += .5;
-    //             break;
-    //         case 'z':
-    //             camera.position.z -= speed; // Move the object along the negative z-axis
-    //             break;
-    //         case 'x':
-    //             camera.position.z += speed; // Move the object along the positive z-axis
-    //             break;
-    //     }
-    //     update();
-    // });
 
     return scene;
 }
@@ -656,7 +609,6 @@ function setupAmbientLightControls(ambientLight, parentFolder = None) {
         });
     ambientLightControls.add(ambientLight.position, 'z', -120, 120);
 }
-
 
 function setupPointLightControls(pointLight, lightHelper, pointLightHelper, parentFolder = None) {
     if (!parentFolder) {
@@ -1207,7 +1159,6 @@ function createLamp(scale = 1.0) {
         color: 0xFFFF00, // Yellow color
         shininess: 0.9,
         emissive: 0x606060,
-        transmission: 0.7,
         transparent: 0.7,
         flatShading: true
     }); 
@@ -1308,12 +1259,15 @@ function setupCamera() {
 }
 
 
+
 function setupControls() {
     controls = new OrbitControls(camera, renderer.domElement);
     controls.dragToLook = true;
     controls.target = new THREE.Vector3(0, 0, 0);
     controls.maxDistance = 800;
+    controls.enableDamping = true;
     controls.update();
+    
 
     return controls;
 }
