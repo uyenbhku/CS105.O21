@@ -78,3 +78,7 @@ label {
     cursor: pointer;
     color: rgba(35, 168, 153, 0.6);
 }
+
+audio { 
+    display:none;
+}

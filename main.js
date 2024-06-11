@@ -1,6 +1,6 @@
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DragControls } from 'three/addons/controls/DragControls.js'
-// import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 // import { MapControls } from 'three/addons/controls/MapControls.js';
 // import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 // import { FontLoader } from 'three/addons/loaders/FontLoader.js';
@@ -16,6 +16,23 @@ const welcomePageContainer = document.querySelector('.welcome-page-container');
 const progressBarContainer = document.querySelector('.progress-bar-container');
 const labelProgressBar = progressBarContainer.querySelector('#label-progress-bar');
 const hideButton = welcomePageContainer.querySelector('#hide-welcome-page-btn');
+
+const speechSynth = window.speechSynthesis;
+var msg = new SpeechSynthesisUtterance();
+
+msg.text = 'Chào mừng các bạn đến với thuỷ cung 3D, tại đây các bạn sẽ được nghe và chiêm ngưỡng một số loài sinh vật biển, cũng như tuỳ chỉnh cảnh vật, ánh sáng xung quanh để phù hợp với mong muốn của bạn! Để bắt đầu, hãy nhấn "Start" nhé!';
+msg.lang = 'vi-VN';
+speechSynth.speak(msg);
+
+var backgroundSound = document.getElementById('background-sound');
+backgroundSound.volume = 0.3;
+backgroundSound.muted = true;
+
+toggleMute();
+
+function toggleMute() {
+    backgroundSound.muted = !backgroundSound.muted;
+}
 
 welcomePageContainer.addEventListener("click", function (event) {
     event.stopPropagation(); // Ngăn chặn sự kiện click lan rộng đến document
@@ -41,8 +58,19 @@ loadingManager.onLoad = function() {
 
 hideButton.addEventListener('click', () => {
 	welcomePageContainer.style.display = 'none';
+    backgroundSound.play()
+        .then(() => console.log('autoplay success!'))
+        .catch(e => console.log(e))
 })
 
+document.body.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") {
+        welcomePageContainer.style.display = 'flex';
+    }
+    if (e.key === 'm') {
+        toggleMute();
+    }
+  });
 ////// END WELCOME PAGE
 
 let scene, camera, renderer, controls, gui;
@@ -64,7 +92,6 @@ function init() {
     renderer = setupRenderer();
     // Orbit Controls
     controls = setupControls();
-
     // ROOM
     var all = new THREE.Group();
 
@@ -93,6 +120,11 @@ function init() {
     var roomVisible = false;
     let initScaleTank = fishTank.scale.y; // Initial state of ambient light visibility
     let scaleTank = initScaleTank; // Initial state of ambient light visibility
+    
+    var audioMute = false;
+    gui.add({'Mute audio': audioMute}, 'Mute audio')
+        .onChange(toggleMute);
+
     gui.add({'Reset room': roomVisible}, 'Reset room')
         .onChange((value) => {
             roomVisible = value;
@@ -252,6 +284,13 @@ function init() {
     // var spotLightHelper = new THREE.SpotLightHelper( spotLight, 2.5 );
     scene.add(spotLightHelper);
     
+    var autoRotateScene = false;
+    gui.add({'Auto rotate': autoRotateScene}, 'Auto rotate')
+        .onChange((val) =>{
+            autoRotateScene = val;
+            controls.autoRotate = autoRotateScene;
+            controls.update(0.1)
+        })
     // END SETUP GUI
 
     scene.add(all);
@@ -1319,8 +1358,6 @@ infoPanel.addEventListener('click', e => {
 })
 // add speech synthesis
 var infoPanelContent = infoPanel.querySelector('#info-panel-content');
-const speechSynth = window.speechSynthesis;
-var msg = new SpeechSynthesisUtterance();
 infoPanel.querySelector('#info-panel-speaker').addEventListener('click', e => {
     msg.text = infoPanelContent.textContent;
     msg.lang = 'vi-VN';
@@ -1391,7 +1428,5 @@ function handleAnimalClick(animal, animalName) {
         }
     });
 }
-
-
 
 init();
